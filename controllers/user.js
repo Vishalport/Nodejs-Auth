@@ -73,13 +73,16 @@ module.exports ={
                         /* Compair OTP at real time...!! */
                             if(res1.otpTime >= Date.now()) {
                                 console.log("OTP verifyed..!!!");
+                                return res.status(200).send({responseMessage:"OTP Verifyed...!!", responseCode:200})
                             }
                             else {
                                 console.log("OTP Time Out Please resend it...!!");
+                                return res.status(501).send({responseMessage:"OTP Time Out.. Resnr it..!!", responseCode:501});
                             }
                         }
                         else {
                             console.log("OTP not valid..!!");
+                            return res.status(501).send({responseMessage:"OTP not Valid.!!", responseCode:501})
                         }
                     
                     } catch (error) {
@@ -94,7 +97,6 @@ module.exports ={
             
         }
     },
-
 
     forgatePassword:(req, res)=> {
         try {
@@ -132,27 +134,25 @@ module.exports ={
         } 
     },
 
-
     login:(req, res)=> {
         try {
-            userModel.findOne({email:req.body.email}, (err, log_res)=> {
+            userModel.findOne({email:req.body.email}, (err, res1)=> {
                 if(err) {
-                    return log_res.status(500).send({responseMessage:"Internal Server Error..!!", responseCode:500});
+                    return res1.status(500).send({responseMessage:"Internal Server Error..!!", responseCode:500});
                 }
-                else if (log_res) {
+                else if (res1) {
                     try{
-                        const email = req.body.email;
-                        const password = req.body.password;
-                        const useremail = userModel.findOne({email:email});
-                        let check = bcrypt.compareSync(password,log_res.password)
+                        const email = res1.body.email;
+                        const password = res1.body.password;
+                        // const useremail = userModel.findOne({email:email});
+                        let check = bcrypt.compareSync(password, res1.password)
                         if(check === false){
-                            //password is incorrect
+                            console.log("Email or Password Incorrect..!!");
+                            return res.status(501).send({responseMessage:"Email or Password Does't match..!!", responseCode:501})
                         }
-                        if(useremail.password === password) {
-                            res.status(201).send({responseMessage:"User is Live..!!", responseCode:201})
+                        else if(email.password === password) {
                             console.log("User is Live..!!");
-                        }else {
-                            res.send("Email or Password Does't match..!!")
+                            return res.status(201).send({responseMessage:"User is Live..!!", responseCode:201});
                         }
                     }catch(e) {
                         res.status(400).send({responseMessage:"Internal Server Error..!!!", responseCode:400})
@@ -160,7 +160,7 @@ module.exports ={
                 }
                 else {
                     console.log("Email is not Registerd..!!");
-                    return log_res.status(500).send({responseMessage:"Email is Not Resitered..!!", responseCode:500});
+                    return res.status(500).send({responseMessage:"Email is Not Resitered..!!", responseCode:500});
                 }
             })
         } catch (error) {
@@ -176,5 +176,3 @@ module.exports ={
 // callback hell
 
 // HW   OTp matching ...!
-
-

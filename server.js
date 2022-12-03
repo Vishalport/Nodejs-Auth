@@ -23,6 +23,7 @@ app.use("/user", userRouter, (req, res) => {
 });
                                                 // app.userRouter("/", userRouter);
 app.listen(3000,()=>{
-    console.log("server is running on 2000");
+    console.log("server is running on 3000");
 });
 
+ 
