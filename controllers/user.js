@@ -7,11 +7,9 @@ const jwt = require("jsonwebtoken");
 jwtKey = "jwt";
 
 module.exports = {
-    // api development
 
-    // signup,login,otpverify,forgotpassword,resetpassword,resend otp,getProfile..!
+    // API Development...!!
 
-    // user Signup...!!
     signup: (req, res) => {
         try {
             userModel.findOne({ email: req.body.email }, (err, result) => {
@@ -236,7 +234,7 @@ module.exports = {
     forgatePassword: (req, res) => {
         try {
             userModel.findOne({ email: req.body.email }, (err, res1) => {
-                console.log('===287',res1)
+                console.log('===287', res1)
                 if (err) {
                     return res.status(501).send({
                         responseMessage: "Email is not In the Database..!!",
@@ -277,26 +275,25 @@ module.exports = {
                             }
                         });
 
-                        console.log(res1._id);                
+                        console.log(res1._id);
                         userModel.findByIdAndUpdate(
                             { _id: res1._id },
-                            { $set: {  otp: newotp, otpTime: expTimeOtp } },
+                            { $set: { otp: newotp, otpTime: expTimeOtp } },
                             { new: true },
                             (err, Data) => {
-                            if (Data) {
-                                res.status(200).json({
-                                responseCode: 200,
-                                responsMessage: "check your mail OTP is send :) ",
-                                responseResult: Data,
-                                });
-                            } else {
-                                console.log("====>377");
-                                res.status(401).json({
-                                responseCode: 401,
-                                responseMesage: "invalid user",
-                                responsResult: [],
-                                });
-                            }  
+                                if (Data) {
+                                    res.status(200).json({
+                                        responseCode: 200,
+                                        responsMessage: "check your mail OTP is send :) ",
+                                        responseResult: Data,
+                                    });
+                                } else {
+                                    res.status(401).json({
+                                        responseCode: 401,
+                                        responseMesage: "invalid user",
+                                        responsResult: [],
+                                    });
+                                }
                         });
                     }
                 }
@@ -306,4 +303,70 @@ module.exports = {
             console.log("Something Went Woring..!");
         }
     },
+
+    resetPassword: (req, res) => {
+        try {
+            userModel.findOne({email : req.body.email}, (err, res1) => {
+                if(err) {
+                    res.status(404).send({
+                        responsMessage: "user Not Found..!!",
+                        responseCode: 404
+                    });
+                }
+                else {
+                    let password = res1.password;
+                     let userPassword = req.body.password;
+                    let check = bcrypt.compareSync(userPassword, password);
+                    if(check == false) {
+                        res.status(201).send({
+                            responsMessage: " OLD Password Dont Match...!!",
+                            responseCode: 201
+                        });
+                    }
+                    else {
+                        if(req.body.otp == res1.otp) {
+                            if(res1.otpTime >= Date.now()) {
+                                userModel.findByIdAndUpdate(
+                                    { _id: res1._id },
+                                    { $set: { password: userPassword} },
+                                    { new: true },
+                                    (err, Data) => {
+                                        if (Data) {
+                                            res.status(200).json({
+                                                responseCode: 200,
+                                                responsMessage: "Password Updated..!!",
+                                                responseResult: Data
+                                            });
+                                        } else {
+                                            res.status(401).json({
+                                                responseCode: 401,
+                                                responseMesage: "invalid user",
+                                                responsResult: [],
+                                            });
+                                        }
+                                });
+                            }
+                            else {
+                                res.status(500).send({
+                                    responsMessage: "OTP Time Expaire Resend the OTp...!!",
+                                    responseCode: 500
+                                });
+                            }
+                        }
+                        else {
+                            res.status(201).send({
+                                responsMessage: "Invalid OTP..!!",
+                                responseCode: 201
+                            });
+                        }
+                    }
+                }
+            })
+        } catch (error) {
+            res.status(500).send({
+                responsMessage: "Something went worng..!!",
+                responseCode: 500
+            });
+        }
+    }
 };

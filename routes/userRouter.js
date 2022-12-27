@@ -4,22 +4,29 @@ const user = require('../controllers/user');
 const Modeluser = require('../model/user');
 
 
-userRouter.post('/signup', user.signup,jsonPaeser,(req,res)=> {
+userRouter.post('/signup', user.signup,jsonPaeser,()=> {
 });
 
-userRouter.post('/verify',user.otpVerifivation,(req,res)=> {
+userRouter.post('/verify',user.otpVerifivation,()=> {
 });
 
 userRouter.get('/login', user.login,()=> {
 });
 
-userRouter.post('/forgate',user.forgatePassword,(req, res)=> {
+userRouter.get('/Views',user.ViewsDocuments,()=> {
 });
 
-userRouter.get('/Views',user.ViewsDocuments,(req, res)=> {
+userRouter.post('/forgate',user.forgatePassword,()=> {
 });
 
-userRouter.get('/token',user.TokenVerifivation,(req, res)=> {
+userRouter.post('/reset',user.resetPassword,()=> {
+});
+
+
+
+
+
+userRouter.get('/token',user.TokenVerifivation,()=> {
 });
 
 module.exports = userRouter;
