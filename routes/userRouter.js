@@ -22,11 +22,7 @@ userRouter.post('/forgate',user.forgatePassword,()=> {
 userRouter.post('/reset',user.resetPassword,()=> {
 });
 
-
-
-
-
-userRouter.get('/token',user.TokenVerifivation,()=> {
+userRouter.get('/token',user.verifyToken,()=> {
 });
 
 module.exports = userRouter;
