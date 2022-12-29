@@ -1,17 +1,74 @@
-// var minsToAdd = 180;
-// let now = new Date().toLocaleTimeString();
-// var newTime = now + minsToAdd * 6000;
-// console.log(newTime);
+module.exports = {
+    success:()=>{
+            return({
+                responseMessage: "Success...!!",
+                responseCode: 200,
+            });
+    },
+    Created:()=>{
+        return({
+            responseMessage: "Created...!!",
+            responseCode: 201,
+        });
+    },
+    Accepted:()=>{
+        return({
+            responseMessage: "Accepted...!!",
+            responseCode: 202,
+        });
+    },
+    Bad_Request:()=>{
+        return({
+            responseMessage: "Bad Request.!!",
+            responseCode: 404,
+        });
+    },
 
-// var minsToAdd = 180;
-// var time = "15:00";
-// let now = new Date().toLocaleTimeString('en-US',+minsToAdd);
-// // var newTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-// // console.log(newTime);
-// console.log(now);
+    Unauthorized:()=>{
+        return({
+            responseMessage: "Unauthorized Access...!!",
+            responseCode: 401,
+        });
+    },
 
+    Payment_Required:()=>{
+        return({
+            responseMessage: "Payment Required...!!",
+            responseCode: 402,
+        });
+    },
 
-var minsToAdd = 3;
-var time = new Date().toLocaleTimeString();
-var newTime = new Date(new Date("2000/01/01 " + time).getTime() + minsToAdd * 60000).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-console.log(newTime);
+    Server_Error:()=>{
+        return({
+            responseMessage: "Internal Server Error...!!",
+            responseCode: 500,
+        });
+    },
+
+    Bad_Gateway:()=>{
+        return({
+            responseMessage: "Bad Gateway...!!",
+            responseCode: 502,
+        });
+    },
+
+    Service_Unavailable:()=>{
+        return({
+            responseMessage: "Service Unavailable...!!",
+            responseCode: 503,
+        });
+    },
+
+    Gateway_Timeout:()=>{
+        return({
+            responseMessage: "GateWay Time out....!!",
+            responseCode: 504,
+        });
+    },
+    Not_Extended:()=>{
+        return({
+            responseMessage: "Not Extended....!!",
+            responseCode: 510,
+        });
+    },
+}

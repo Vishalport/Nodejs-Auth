@@ -1,10 +1,17 @@
 const userModel = require("../model/user");
 const common = require("../helper/otp");
 const bcrypt = require("bcryptjs");
-const Ctoken = require("../helper/auth");
 const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");
 jwtKey = "jwt";
+const test = require("../helper/test");
+const cloudinary = require("cloudinary").v2;
+
+cloudinary.config({
+    cloud_name : 'dhdvtnehi',
+    api_key: '516765691967195',
+    api_secret:'VogCyCi7YWCwKUSHduwVxpd5VxE'
+});
 
 module.exports = {
     // API Development...!!
@@ -68,11 +75,11 @@ module.exports = {
                     req.body.password = password;
 
                     /* compair Password with Postman..!!  */
-                    let compair_password = bcrypt.hashSync(req.body.password);
-                    let newresult = bcrypt.compareSync(
-                        req.body.password,
-                        compair_password
-                    );
+                    // let compair_password = bcrypt.hashSync(req.body.password);
+                    // let newresult = bcrypt.compareSync(
+                    //     req.body.password,
+                    //     compair_password
+                    // );
 
                     userModel(req.body).save((err1, res1) => {
                         if (err1) {
@@ -103,9 +110,6 @@ module.exports = {
     otpVerifivation: (req, res) => {
         try {
             userModel.findOne({ email: req.body.email }, (err, res1) => {
-                // console.log(res1.email);
-                // console.log(res1.otp);
-                // console.log(res1.otpTime);
                 if (err) {
                     console.log("Email is not in Database..!!");
                     return res.status(404).send({
@@ -180,10 +184,11 @@ module.exports = {
                     }
                 } else {
                     console.log("Email is not Registerd..!!");
-                    return res.status(404).send({
-                        responseMessage: "Email is Not Resitered..!!",
-                        responseCode: 404,
-                    });
+                    // return res.status(404).send({
+                    //     responseMessage: "Email is Not Resitered..!!",
+                    //     responseCode: 404,
+                    // });
+                    return res.send(test.Bad_Request)
                 }
             });
         } catch (error) {
@@ -276,7 +281,7 @@ module.exports = {
                             }
                         });
 
-                        console.log(res1._id);
+                        // console.log(res1._id);
                         userModel.findByIdAndUpdate(
                             { _id: res1._id },
                             { $set: { otp: newotp, otpTime: expTimeOtp } },
@@ -354,15 +359,80 @@ module.exports = {
                 responseCode: 502,
             });
         }
-    }
+    },
+
+    img:(req, res) => {
+        const file  = req.files.photo;
+        cloudinary.uploader.upload(file.tempFilePath,(err, res1)=> {
+            if(err) {
+                return res.status(500).send({
+                    responseMessage: "Internal server error",
+                    responseCode: 500
+                });
+            }
+            else {
+                console.log(res1);
+                return res.status(200).send({
+                    responseMessage: "Image is Uploded..!!",
+                    responseCode: 200,
+                });
+            }
+            
+        });  
+    },
+
+
+    test: (req, res) => {
+        let input = req.body.input;
+            if(input == "success"){
+                return res.send(test.success());
+            }
+            else if(input == "Created"){
+                return res.send(test.Created());
+            }
+            else if(input == "Accepted"){
+                return res.send(test.Accepted());
+            }
+            else if(input == "Accepted"){
+                return res.send(test.Accepted());
+            }
+            else if(input == "Bad Request"){
+                return res.send(test.Bad_Request());
+            }
+            else if(input == "Accepted"){
+                return res.send(test.Accepted());
+            }
+            else if(input == "Bad Request"){
+                return res.send(test.Bad_Request());
+            }
+            else if(input == "Unauthorized Access"){
+                return res.send(test.Unauthorized());
+            }
+            else if(input == "Payment Required"){
+                return res.send(test.Payment_Required());
+            }
+            else if(input == "Internal Server Error"){
+                return res.send(test.Server_Error());
+            }
+            else if(input == "Bad Gateway"){
+                return res.send(test.Bad_Gateway());
+            }
+            else if(input == "Service Unavailable"){
+                return res.send(test.Service_Unavailable());
+            }
+            else if(input == "GateWay Time out"){
+                return res.send(test.Gateway_Timeout());
+            }
+            else if(input == "Not Extended"){
+                return res.send(test.Not_Extended());
+            }
+    },
+
+
+
+    
+     
 };
-
-
-
-
-
-
-
 
 
 

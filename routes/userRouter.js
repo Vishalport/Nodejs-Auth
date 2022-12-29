@@ -1,7 +1,7 @@
 const userRouter = require("express").Router();
 const jsonPaeser = require("express");
 const user = require('../controllers/user');
-const Modeluser = require('../model/user');
+// const Modeluser = require('../model/user');
 
 
 userRouter.post('/signup', user.signup,jsonPaeser,()=> {
@@ -25,4 +25,9 @@ userRouter.post('/reset',user.resetPassword,()=> {
 userRouter.get('/token',user.verifyToken,()=> {
 });
 
+userRouter.post('/img',user.img,()=> {
+});
+
+userRouter.get('/test',user.test,()=> {
+});
 module.exports = userRouter;

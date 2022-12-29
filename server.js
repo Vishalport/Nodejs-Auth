@@ -4,9 +4,10 @@ require('./db/dbconnection');
 const userRouter = require("./routes/userRouter");
 const hbs = require("hbs");
 
+const fileUpload = require('express-fileupload');app.use(fileUpload({
+    useTempFiles: true
+}));
 
-// const path=require('path');
-// app.use('/public',express.static(path.join(__dirname, 'public')));
 
 app.set("view engine", "hbs");
 app.set("views", "./views");
