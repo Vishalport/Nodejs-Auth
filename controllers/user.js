@@ -381,7 +381,6 @@ module.exports = {
         });  
     },
 
-
     test: (req, res) => {
         let input = req.body.input;
             if(input == "success"){
@@ -427,79 +426,5 @@ module.exports = {
                 return res.send(test.Not_Extended());
             }
     },
-
-
-
-    
-     
+       
 };
-
-
-
-
-// resetPassword: (req, res) => {
-//     try {
-//         userModel.findOne({ email: req.body.email }, (err, res1) => {
-//             if (err) {
-//                 res.status(404).send({
-//                     responsMessage: "user Not Found..!!",
-//                     responseCode: 404,
-//                 });
-//             } else {
-//                 const password = req.body.password;
-//                 let check = bcrypt.compareSync(password, res1.password);
-//                 if (check === false) {
-//                     console.log("old Password Not Match..!!");
-//                     return res.status(501).send({
-//                         responseMessage: "old Password Not Match..!!",
-//                         responseCode: 501,
-//                     });
-//                 } else {
-//                     if (req.body.otp == res1.otp) {
-//                         if (res1.otpTime >= Date.now()) {
-//                             userModel.findByIdAndUpdate(
-//                                 { _id: res1._id },
-//                                 { $set: { password: newPassword } },
-//                                 { new: true },
-//                                 (err, Data) => {
-//                                     if (Data) {
-//                                         res.status(200).json({
-//                                             responseCode: 200,
-//                                             responsMessage: "Password Updated..!!",
-//                                             responseResult: Data,
-//                                         });
-//                                     }
-//                                     else {
-//                                         res.status(203).json({
-//                                             responseCode: 203,
-//                                             responseMesage: "invalid user",
-//                                             responsResult: [],
-//                                         });
-//                                     }
-//                                 }
-//                             );
-//                         } 
-//                         else {
-//                             res.status(504).send({
-//                                 responsMessage: "OTP Time Expaire Resend the OTp...!!",
-//                                 responseCode: 504,
-//                             });
-//                         }
-//                     }
-//                     else {
-//                         res.status(201).send({
-//                             responsMessage: "Invalid OTP..!!",
-//                             responseCode: 201,
-//                         });
-//                     }
-//                 }
-              
-//             }
-//         });
-//     } catch (error) {
-//         res.status(502).send({
-//             responsMessage: "Something went worng..!!",
-//             responseCode: 502,
-//         });
-//     }
-// }

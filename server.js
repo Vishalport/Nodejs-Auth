@@ -14,7 +14,6 @@ app.set("views", "./views");
                                                 // app.post("/signup",userRouter);
 app.use(express.urlencoded({extended:true}));
 app.use(express.json()); 
-
                                                 // router.use("/user", userRouter);
 app.use("/api/v1/user", userRouter, (req, res) => {
     res.render("from");
