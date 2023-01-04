@@ -13,7 +13,7 @@ const user = new Schema({
     password:{
         type:String
     },
-    mobileNumber:{
+    mobile:{
         type:Number
     },
     otpTime : {

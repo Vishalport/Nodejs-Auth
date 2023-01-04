@@ -3,9 +3,21 @@ const common = require("../helper/otp");
 const bcrypt = require("bcryptjs");
 const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");
-jwtKey = "jwt";
+const config = require("../config/config")
 const test = require("../helper/test");
 const cloudinary = require("cloudinary").v2;
+
+const create_token = (id)=> {
+    try {
+        const token = jwt.sign({ _id:id }, config.key);       
+        return token; 
+    } catch (error) {
+        return res.status(500).send({
+            responseMessage: "Error While Creating the Token....!!",
+            responseCode: 500,
+        });
+    }
+}
 
 cloudinary.config({
     cloud_name : 'dhdvtnehi',
@@ -13,12 +25,12 @@ cloudinary.config({
     api_secret:'VogCyCi7YWCwKUSHduwVxpd5VxE'
 });
 
-module.exports = {
+module.exports = { 
     // API Development...!!
 
-    signup: (req, res) => {
+    signup: async(request, responce)=> {
         try {
-            userModel.findOne({ email: req.body.email }, (err, result) => {
+            userModel.findOne({ email: request.body.email }, async (err, result) => {
                 if (err) {
                     return res.status(500).send({
                         responseMessage: "Internal server error",
@@ -26,71 +38,25 @@ module.exports = {
                         error: err,
                     });
                 } else if (result) {
-                    return res.status(500).send({
-                        responseMessage: "email already exists",
+                    return responce.status(401).send({
+                        responseMessage: "email already exists..!!",
                         responseCode: 401,
-                        error: [],
                     });
                 } else {
-                    /* genrate OTP...!! */
-                    let newotp = common.generateOtp();
-                    req.body.otp = newotp;
+                    /* genrate OTP / time ...!! */
+                    request.body.otp = common.generateOtp();
+                    request.body.otpTime = Date.now() + 180000;
 
-                    const transporter = nodemailer.createTransport({
-                        host: "smtp.gmail.com",
-                        port: 587,
-                        secure: false,
-                        requireTLS: true,
-                        auth: {
-                            user: "fortestingpurpose0077@gmail.com",
-                            pass: "bztzdeyoecetitik",
-                        },
-                    });
-
-                    const mailOptions = {
-                        from: "fortestingpurpose0077@gmail.com",
-                        to: req.body.email,
-                        subject: "OTP veryfication..",
-                        html:
-                            "<p> Hii " + ", Your OTP is " + newotp + "Verify your OTP</a>",
-                    };
-
-                    transporter.sendMail(mailOptions, function (error, info) {
-                        if (error) {
-                            console.log(error);
-                        } else {
-                            console.log("mail has been sent:- ", info.response);
-                        }
-                    });
-
-                    /*
-                     * Adding Curent Time for OTP Verification...!!
-                     */
-                    req.body.otpTime = Date.now() + 180000;
-
-                    /*
-                     * hashing the password..!!
-                     */
-                    let password = bcrypt.hashSync(req.body.password);
-                    req.body.password = password;
-
-                    /* compair Password with Postman..!!  */
-                    // let compair_password = bcrypt.hashSync(req.body.password);
-                    // let newresult = bcrypt.compareSync(
-                    //     req.body.password,
-                    //     compair_password
-                    // );
-
-                    userModel(req.body).save((err1, res1) => {
+                    request.body.password = await bcrypt.hash(request.body.password, 10);
+                    userModel(request.body).save((err1) => {
                         if (err1) {
-                            return res.status(500).send({
+                            return responce.status(500).send({
                                 responseMessage: "Internal server error",
                                 responseCode: 500,
-                                error: err1,
                             });
                         } else {
-                            return res.status(200).send({
-                                responseMessage: "OTP is Send to the Email..!!",
+                            return responce.status(200).send({
+                                responseMessage: "Signup Success full...!!",
                                 responseCode: 200,
                             });
                         }
@@ -98,21 +64,69 @@ module.exports = {
                 }
             });
         } catch (error) {
+            console.log("Something Went Woring..!");
             console.log(error);
-            return res.status(502).send({
-                responseMessage: "Something went wrong",
-                responseCode: 502,
-                error: error,
+            return responce.status(400).send({
+                responseMessage: "Something went Worng..!!", 
+                responseCode:400
             });
         }
     },
 
-    otpVerifivation: (req, res) => {
+    login: async(request, responce) => {
         try {
-            userModel.findOne({ email: req.body.email }, (err, res1) => {
+            userModel.findOne({ email: request.body.email }, async(err, result) => {
+                if (err) {
+                    return responce.status(500).send({
+                        responseMessage: "Internal Server Error..!!",
+                        responseCode: 500,
+                    });
+                } else if (result) {
+                    try {
+                        const password = request.body.password;
+                        const check = await bcrypt.compare(password, result.password);
+                        if (check) {
+                            console.log("User is Live..!!");
+                            /* Jwt token...!! */
+                            const tokenData = create_token(result);
+                            responce.send(tokenData);
+                        } else {
+                            console.log("mail or Password IncorrecEt..!!");
+                            return responce.status(501).send({
+                                responseMessage: "Email or Password Does't match.....!!",
+                                responseCode: 501,
+                            });
+                        }
+                    } catch (e) {
+                        responce.status(502).send({
+                            responseMessage: "Something went Wrong...!!",
+                            responseCode: 502,
+                        });
+                    }
+                } else {
+                    console.log("Email is not Registerd..!!");
+                    return responce.status(404).send({
+                        responseMessage: "Email is Not Resitered..!!",
+                        responseCode: 404,
+                    });
+                    // return res.send(test.Bad_Request)
+                }
+            });
+        } catch (error) {
+            console.log(error);
+            return responce.status(500).send({
+                responseMessage: "Internal Server Error..!!!",
+                responseCode: 500,
+            });
+        }
+    },
+
+    otpVerifivation: async(req, res) => {
+        try {
+            userModel.findOne({ email: req.body.email }, async(err, res1) => {
                 if (err) {
                     console.log("Email is not in Database..!!");
-                    return res.status(404).send({
+                    return await res.status(404).send({
                         responseMessage: "Email is not in database..!!",
                         responseCode: 404,
                     });
@@ -122,20 +136,20 @@ module.exports = {
                             /* Compair OTP at real time...!! */
                             if (res1.otpTime >= Date.now()) {
                                 console.log("OTP verifyed..!!!");
-                                return res.status(200).send({
-                                    responseMessage: "Signup success and OTP Verifyed...!!",
+                                return await res.status(200).send({
+                                    responseMessage: "success and OTP Verifyed...!!",
                                     responseCode: 200,
                                 });
                             } else {
                                 console.log("OTP Time Out Please resend it...!!");
-                                return res.status(501).send({
+                                return await res.status(501).send({
                                     responseMessage: "OTP Time Out.. Resnr it..!!",
                                     responseCode: 501,
                                 });
                             }
                         } else {
                             console.log("OTP not valid..!!");
-                            return res.status(201).send({
+                            return await res.status(201).send({
                                 responseMessage: "OTP not Valid.!!",
                                 responseCode: 201,
                             });
@@ -148,106 +162,43 @@ module.exports = {
         } catch (error) {
             console.log("Something Went Woring..!");
             console.log(error);
-            return res.status(502).send({ responseCode: "Something went Worng..!!" });
+            return await res.status(502).send({ responseCode: "Something went Worng..!!" });
         }
     },
 
-    login: (req, res) => {
+    ViewsDocuments: async(request, responce) => {
         try {
-            userModel.findOne({ email: req.body.email }, (err, res1) => {
+            userModel.findOne({ email: request.body.email }, async(err, result) => {
                 if (err) {
-                    return res.status(500).send({
+                    return responce.status(500).send({
                         responseMessage: "Internal Server Error..!!",
                         responseCode: 500,
                     });
-                } else if (res1) {
-                    try {
-                        const password = req.body.password;
-                        let check = bcrypt.compareSync(password, res1.password);
-                        if (check === false) {
-                            console.log("mail or Password IncorrecEt..!!");
-                            return res.status(501).send({
-                                responseMessage: "Email or Password Does't match.....!!",
-                                responseCode: 501,
-                            });
-                        } else {
-                            console.log("User is Live..!!");
-                            /* Jwt token...!! */
-                            const token = jwt.sign({ res1 }, jwtKey);
-                            res.send(token);
-                        }
-                    } catch (e) {
-                        res.status(502).send({
-                            responseMessage: "Something went Wrong...!!",
-                            responseCode: 502,
-                        });
-                    }
-                } else {
-                    console.log("Email is not Registerd..!!");
-                    // return res.status(404).send({
-                    //     responseMessage: "Email is Not Resitered..!!",
-                    //     responseCode: 404,
-                    // });
-                    return res.send(test.Bad_Request)
+                }
+                else {
+                    console.log(result);
+                    return await responce.send(result)
                 }
             });
         } catch (error) {
             console.log(error);
-            return res.status(500).send({
-                responseMessage: "Internal Server Error..!!!",
-                responseCode: 500,
-                error: error,
-            });
-        }
-    },
-
-    ViewsDocuments: (req, res) => {
-        try {
-            userModel.find({}, (err, res1) => {
-                if (err) {
-                    return res1.status(500).send({
-                        responseMessage: "Internal Server Error..!!",
-                        responseCode: 500,
-                    });
-                } else {
-                }
-            });
-        } catch (error) {
-            console.log(error);
-            return res.status(502).send({
+            return responce.status(502).send({
                 responseMessage: "Something went Wrong...!!",
                 responseCode: 502,
-                error: error,
             });
         }
     },
 
-    verifyToken: (req, res, next) => {
-
-        const token = req.body.token;
-        if (!token) {
-            res.status(201).send({ responsMessage: "Token is Required..!!", responseCode: 201 });
-        }
+    forgatePassword: async (request, responce) => {
         try {
-            const decode = jwt.verify(token, jwtKey);
-            req.token = decode;
-            res.status(200).send("Token. verifyed..!!")
-        } catch (error) {
-            res.status(400).send("Invalid Token...!!")
-        }
-        return next();
-    },
-
-    forgatePassword: (req, res) => {
-        try {
-            userModel.findOne({ email: req.body.email }, (err, res1) => {
+            userModel.findOne({ email: request.body.email }, async(err, result) => {
                 if (err) {
-                    return res.status(404).send({
+                    return await responce.status(404).send({
                         responseMessage: "Email is not In the Database..!!",
                         responseCode: 404,
                     });
                 } else {
-                    if (res1) {
+                    if (result) {
                         let newotp = common.generateOtp();
                         let expTimeOtp = Date.now() + 180000;
 
@@ -264,7 +215,7 @@ module.exports = {
 
                         const mailOptions = {
                             from: "fortestingpurpose0077@gmail.com",
-                            to: req.body.email,
+                            to: request.body.email,
                             subject: "OTP veryfication..",
                             html:
                                 "<p> Hii " +
@@ -283,18 +234,18 @@ module.exports = {
 
                         // console.log(res1._id);
                         userModel.findByIdAndUpdate(
-                            { _id: res1._id },
+                            { _id: result._id },
                             { $set: { otp: newotp, otpTime: expTimeOtp } },
                             { new: true },
-                            (err, Data) => {
+                            async (err, Data) => {
                                 if (Data) {
-                                    res.status(200).json({
+                                    responce.status(200).json({
                                         responseCode: 200,
                                         responsMessage: "check your mail OTP is send :) ",
                                         responseResult: Data,
                                     });
                                 } else {
-                                    res.status(203).json({
+                                    return await responce.status(203).json({
                                         responseCode: 203,
                                         responseMesage: "invalid user",
                                         responsResult: [],
@@ -306,16 +257,17 @@ module.exports = {
                 }
             });
         } catch (error) {
-            res.status(502).send({ responseCode: "Something went Worng..!!" });
             console.log("Something Went Woring..!");
+            return await responce.status(502).send({ responseCode: "Something went Worng..!!" });
+            
         }
     },
 
-    resetPassword: (req, res) => {
+    resetPassword: async(req, res) => {
         try {
-            userModel.findOne({ email: req.body.email }, (err, res1) => {
+            userModel.findOne({ email: req.body.email }, async(err, res1) => {
                 if (err) {
-                    res.status(404).send({
+                    return await res.status(404).send({
                         responsMessage: "user Not Found..!!",
                         responseCode: 404,
                     });
@@ -323,38 +275,37 @@ module.exports = {
                     let UPassword = req.body.Password;
                     let cPassword = req.body.cPassword;
                     if(UPassword == cPassword) {
+                        let Hpassword = await bcrypt.hash(cPassword, 10);
                         userModel.findByIdAndUpdate(
                             { _id: res1._id },
-                            { $set: { password: cPassword} },
+                            { $set: { password: Hpassword} },
                             { new: true },
-                            (err, Data) => {
+                            async (err, Data) => {
                                 if (Data) {
-                                    res.status(200).json({
+                                    return await res.status(200).json({
                                         responseCode: 200,
                                         responsMessage: "Password Updated...!!) ",
                                         responseResult: Data,
                                     });
                                 } else {
-                                    res.status(501).json({
+                                    return await res.status(501).json({
                                         responseCode: 501,
                                         responseMesage: "Something went Worng..!!",
-                                        responsResult: [],
                                     });
                                 }
                             }
                         );
                     }
                     else {
-                        res.status(201).json({
+                        return await res.status(201).json({
                             responseCode: 201,
                             responseMesage: "Cpassword and Password Don't match...!!!!",
-                            responsResult: [],
                         });
                     }
                 }
             });
         } catch (error) {
-            res.status(502).send({
+            return await res.status(502).send({
                 responsMessage: "Something went worng..!!",
                 responseCode: 502,
             });
@@ -426,5 +377,5 @@ module.exports = {
                 return res.send(test.Not_Extended());
             }
     },
-       
+
 };

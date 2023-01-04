@@ -8,22 +8,17 @@ const fileUpload = require('express-fileupload');app.use(fileUpload({
     useTempFiles: true
 }));
 
-
-app.set("view engine", "hbs");
-app.set("views", "./views");
-                                                // app.post("/signup",userRouter);
 app.use(express.urlencoded({extended:true}));
 app.use(express.json()); 
-                                                // router.use("/user", userRouter);
+                                            
 app.use("/api/v1/user", userRouter, (req, res) => {
-    res.render("from");
 });
 
 app.use("/user", userRouter, (req, res) => {
 });
-                                                // app.userRouter("/", userRouter);
+
 app.listen(3000,()=>{
-    console.log("server is running on 3000");
+    console.log("server is running on 5000");
 });
 
  
