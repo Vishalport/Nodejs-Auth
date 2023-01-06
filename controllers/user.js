@@ -7,10 +7,10 @@ const config = require("../config/config")
 const test = require("../helper/test");
 const cloudinary = require("cloudinary").v2;
 
-const create_token = (id)=> {
+const create_token = (id) => {
     try {
-        const token = jwt.sign({ _id:id }, config.key);       
-        return token; 
+        const token = jwt.sign({ _id: id }, config.key);
+        return token;
     } catch (error) {
         return res.status(500).send({
             responseMessage: "Error While Creating the Token....!!",
@@ -20,15 +20,15 @@ const create_token = (id)=> {
 }
 
 cloudinary.config({
-    cloud_name : 'dhdvtnehi',
+    cloud_name: 'dhdvtnehi',
     api_key: '516765691967195',
-    api_secret:'VogCyCi7YWCwKUSHduwVxpd5VxE'
+    api_secret: 'VogCyCi7YWCwKUSHduwVxpd5VxE'
 });
 
-module.exports = { 
+module.exports = {
     // API Development...!!
 
-    signup: async(request, responce)=> {
+    signup: async (request, responce) => {
         try {
             userModel.findOne({ email: request.body.email }, async (err, result) => {
                 if (err) {
@@ -44,8 +44,40 @@ module.exports = {
                     });
                 } else {
                     /* genrate OTP / time ...!! */
-                    request.body.otp = common.generateOtp();
+                    newotp = common.generateOtp();
+                    request.body.otp = newotp;
                     request.body.otpTime = Date.now() + 180000;
+                    request.body.dateOfBirth =  request.body.dob;
+
+                    const transporter = nodemailer.createTransport({
+                        host: "smtp.gmail.com",
+                        port: 587,
+                        secure: false,
+                        requireTLS: true,
+                        auth: {
+                            user: "fortestingpurpose0077@gmail.com",
+                            pass: "bztzdeyoecetitik",
+                        },
+                    });
+
+                    const mailOptions = {
+                        from: "fortestingpurpose0077@gmail.com",
+                        to: request.body.email,
+                        subject: "OTP veryfication..",
+                        html:
+                            "<p> Hii " +
+                            ", Your Forgate Password OTP is " +
+                            newotp +
+                            " Verify your OTP</a>",
+                    };
+
+                    transporter.sendMail(mailOptions, function (error, info) {
+                        if (error) {
+                            console.log(error);
+                        } else {
+                            console.log("mail has been sent:- ", info.response);
+                        }
+                    });
 
                     request.body.password = await bcrypt.hash(request.body.password, 10);
                     userModel(request.body).save((err1) => {
@@ -55,8 +87,9 @@ module.exports = {
                                 responseCode: 500,
                             });
                         } else {
+                            console.log("Signup Success...!!");
                             return responce.status(200).send({
-                                responseMessage: "Signup Success full...!!",
+                                responseMessage: "Signup Success...!!",
                                 responseCode: 200,
                             });
                         }
@@ -67,15 +100,15 @@ module.exports = {
             console.log("Something Went Woring..!");
             console.log(error);
             return responce.status(400).send({
-                responseMessage: "Something went Worng..!!", 
-                responseCode:400
+                responseMessage: "Something went Worng..!!",
+                responseCode: 400
             });
         }
     },
 
-    login: async(request, responce) => {
+    login: async (request, responce) => {
         try {
-            userModel.findOne({ email: request.body.email }, async(err, result) => {
+            userModel.findOne({ email: request.body.email }, async (err, result) => {
                 if (err) {
                     return responce.status(500).send({
                         responseMessage: "Internal Server Error..!!",
@@ -86,10 +119,18 @@ module.exports = {
                         const password = request.body.password;
                         const check = await bcrypt.compare(password, result.password);
                         if (check) {
-                            console.log("User is Live..!!");
-                            /* Jwt token...!! */
-                            const tokenData = create_token(result);
-                            responce.send(tokenData);
+                            if (result.otpVerification == true) {
+                                console.log("User is Live..!!");
+                                /* Jwt token...!! */
+                                const tokenData = create_token(result);
+                                responce.send(tokenData);
+                            } else {
+                                console.log("otp is not verify..!!");
+                                return responce.status(501).send({
+                                    responseMessage: "Otp is not verify......!!",
+                                    responseCode: 501,
+                                }); 
+                            }
                         } else {
                             console.log("mail or Password IncorrecEt..!!");
                             return responce.status(501).send({
@@ -121,9 +162,9 @@ module.exports = {
         }
     },
 
-    otpVerifivation: async(req, res) => {
+    otpVerifivation: async (req, res) => {
         try {
-            userModel.findOne({ email: req.body.email }, async(err, res1) => {
+            userModel.findOne({ email: req.body.email }, async (err, res1) => {
                 if (err) {
                     console.log("Email is not in Database..!!");
                     return await res.status(404).send({
@@ -135,12 +176,37 @@ module.exports = {
                         if (res1.otp == req.body.otp) {
                             /* Compair OTP at real time...!! */
                             if (res1.otpTime >= Date.now()) {
-                                console.log("OTP verifyed..!!!");
-                                return await res.status(200).send({
-                                    responseMessage: "success and OTP Verifyed...!!",
-                                    responseCode: 200,
-                                });
-                            } else {
+                                if (res1.otpVerification == false) {
+                                    userModel.findByIdAndUpdate(
+                                        { _id: res1._id },
+                                        { $set: { otpVerification: true } },
+                                        { new: true },
+
+                                        async (err, Data) => {
+                                            if (Data) {
+                                                console.log("OTP varifyed..!!");
+                                                return await res.status(200).json({
+                                                    responseCode: 200,
+                                                    responsMessage: " Otp Verify.....!!) ",
+                                                    responseResult: Data,
+                                                });
+                                            } else {
+                                                return await res.status(501).json({
+                                                    responseCode: 501,
+                                                    responseMesage: "Something went Worng..!!",
+                                                });
+                                            }
+                                        }
+                                   );
+                                }
+                                else {
+                                    return await res.status(200).send({
+                                        responseMessage: " Already OTP is Verifyed...!!",
+                                        responseCode: 200,
+                                    });
+                                }
+                            }
+                            else {
                                 console.log("OTP Time Out Please resend it...!!");
                                 return await res.status(501).send({
                                     responseMessage: "OTP Time Out.. Resnr it..!!",
@@ -166,9 +232,9 @@ module.exports = {
         }
     },
 
-    ViewsDocuments: async(request, responce) => {
+    ViewsDocuments: async (request, responce) => {
         try {
-            userModel.findOne({ email: request.body.email }, async(err, result) => {
+            userModel.findOne({ email: request.body.email }, async (err, result) => {
                 if (err) {
                     return responce.status(500).send({
                         responseMessage: "Internal Server Error..!!",
@@ -191,7 +257,7 @@ module.exports = {
 
     forgatePassword: async (request, responce) => {
         try {
-            userModel.findOne({ email: request.body.email }, async(err, result) => {
+            userModel.findOne({ email: request.body.email }, async (err, result) => {
                 if (err) {
                     return await responce.status(404).send({
                         responseMessage: "Email is not In the Database..!!",
@@ -259,13 +325,13 @@ module.exports = {
         } catch (error) {
             console.log("Something Went Woring..!");
             return await responce.status(502).send({ responseCode: "Something went Worng..!!" });
-            
+
         }
     },
 
-    resetPassword: async(req, res) => {
+    resetPassword: async (req, res) => {
         try {
-            userModel.findOne({ email: req.body.email }, async(err, res1) => {
+            userModel.findOne({ email: req.body.email }, async (err, res1) => {
                 if (err) {
                     return await res.status(404).send({
                         responsMessage: "user Not Found..!!",
@@ -274,11 +340,11 @@ module.exports = {
                 } else {
                     let UPassword = req.body.Password;
                     let cPassword = req.body.cPassword;
-                    if(UPassword == cPassword) {
+                    if (UPassword == cPassword) {
                         let Hpassword = await bcrypt.hash(cPassword, 10);
                         userModel.findByIdAndUpdate(
                             { _id: res1._id },
-                            { $set: { password: Hpassword} },
+                            { $set: { password: Hpassword } },
                             { new: true },
                             async (err, Data) => {
                                 if (Data) {
@@ -312,10 +378,10 @@ module.exports = {
         }
     },
 
-    img:(req, res) => {
-        const file  = req.files.photo;
-        cloudinary.uploader.upload(file.tempFilePath,(err, res1)=> {
-            if(err) {
+    img: (req, res) => {
+        const file = req.file.photo;
+        cloudinary.uploader.upload(file.tempFilePath, (err, res1) => {
+            if (err) {
                 return res.status(500).send({
                     responseMessage: "Internal server error",
                     responseCode: 500
@@ -328,54 +394,54 @@ module.exports = {
                     responseCode: 200,
                 });
             }
-            
-        });  
+
+        });
     },
 
     test: (req, res) => {
         let input = req.body.input;
-            if(input == "success"){
-                return res.send(test.success());
-            }
-            else if(input == "Created"){
-                return res.send(test.Created());
-            }
-            else if(input == "Accepted"){
-                return res.send(test.Accepted());
-            }
-            else if(input == "Accepted"){
-                return res.send(test.Accepted());
-            }
-            else if(input == "Bad Request"){
-                return res.send(test.Bad_Request());
-            }
-            else if(input == "Accepted"){
-                return res.send(test.Accepted());
-            }
-            else if(input == "Bad Request"){
-                return res.send(test.Bad_Request());
-            }
-            else if(input == "Unauthorized Access"){
-                return res.send(test.Unauthorized());
-            }
-            else if(input == "Payment Required"){
-                return res.send(test.Payment_Required());
-            }
-            else if(input == "Internal Server Error"){
-                return res.send(test.Server_Error());
-            }
-            else if(input == "Bad Gateway"){
-                return res.send(test.Bad_Gateway());
-            }
-            else if(input == "Service Unavailable"){
-                return res.send(test.Service_Unavailable());
-            }
-            else if(input == "GateWay Time out"){
-                return res.send(test.Gateway_Timeout());
-            }
-            else if(input == "Not Extended"){
-                return res.send(test.Not_Extended());
-            }
+        if (input == "success") {
+            return res.send(test.success());
+        }
+        else if (input == "Created") {
+            return res.send(test.Created());
+        }
+        else if (input == "Accepted") {
+            return res.send(test.Accepted());
+        }
+        else if (input == "Accepted") {
+            return res.send(test.Accepted());
+        }
+        else if (input == "Bad Request") {
+            return res.send(test.Bad_Request());
+        }
+        else if (input == "Accepted") {
+            return res.send(test.Accepted());
+        }
+        else if (input == "Bad Request") {
+            return res.send(test.Bad_Request());
+        }
+        else if (input == "Unauthorized Access") {
+            return res.send(test.Unauthorized());
+        }
+        else if (input == "Payment Required") {
+            return res.send(test.Payment_Required());
+        }
+        else if (input == "Internal Server Error") {
+            return res.send(test.Server_Error());
+        }
+        else if (input == "Bad Gateway") {
+            return res.send(test.Bad_Gateway());
+        }
+        else if (input == "Service Unavailable") {
+            return res.send(test.Service_Unavailable());
+        }
+        else if (input == "GateWay Time out") {
+            return res.send(test.Gateway_Timeout());
+        }
+        else if (input == "Not Extended") {
+            return res.send(test.Not_Extended());
+        }
     },
 
 };

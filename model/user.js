@@ -1,14 +1,27 @@
 const {Schema,model} = require('mongoose')
 
 const user = new Schema({
-    name:{
+    firstName : {
+        type : String,
+    },
+    lastName : {
+        type : String
+    },
+    username:{
         type:String
     },
     email:{
         type:String
     },
+    dateOfBirth: {
+        type : String
+    },
     otp:{
-        type:String  // shoud be a number 
+        type:Number   
+    },
+    otpVerification : {
+        type : Boolean,
+        default : false
     },
     password:{
         type:String

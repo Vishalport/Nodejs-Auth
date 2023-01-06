@@ -2,9 +2,11 @@ const express = require('express');
 const app = express();
 require('./db/dbconnection');
 const userRouter = require("./routes/userRouter");
-const hbs = require("hbs");
+const fileupload = require("express-fileupload");
 
-const fileUpload = require('express-fileupload');app.use(fileUpload({
+app.use(express.json({ limit: "50mb" }));
+
+app.use(fileupload({
     useTempFiles: true
 }));
 
@@ -18,7 +20,11 @@ app.use("/user", userRouter, (req, res) => {
 });
 
 app.listen(3000,()=>{
-    console.log("server is running on 5000");
+    console.log("server is running on 3000");
 });
 
  
+
+
+
+// /home/administrator/snap/postman/184/Postman/files
