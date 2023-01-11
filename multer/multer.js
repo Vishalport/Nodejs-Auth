@@ -1,21 +1,28 @@
-const express = require('express')
-const multer  = require('multer')
-
-
-
-
-const upload = multer({ dest: 'uploads/' })
+const multer = require("multer");
 
 module.exports = {
     storage : multer.diskStorage({
-        destination : function(req, res,cd) {
-            cd(null, './public/upload/')
+        destination : function(req, file,cd) {
+            cd(null, './upload/')
         },
-        filename: function(req, req, cd) {
-            cd(null, Data.now()+file.originaname)
+        filename: function(req, file, cd) {
+            cd(null, Data.now()+'-'+file.originalname)
         }
     }),
 
-    upload : multer({storage:this.storage})
+    fileFilter : (req, file, cd )=> {
+        if(file.mimetype == 'image/jpeg' || file.mimetype == 'image/png') {
+            cd(null, true )
+        }
+        else {
+            console.log("file extention is diffrent..!!");
+            cd({Message : 'unsuported file extation....!!'}, false)
+        }
+    },
+
+    upload: multer( {
+        // Storage: storage,
+        limits : {fileSize : 1024 * 1024},
+    })
 }
 

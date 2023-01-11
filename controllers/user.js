@@ -5,7 +5,9 @@ const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");
 const config = require("../config/config")
 const test = require("../helper/test");
+const { request } = require("express");
 const cloudinary = require("cloudinary").v2;
+const QRcode = require("qrcode");
 
 const create_token = (id) => {
     try {
@@ -32,13 +34,13 @@ module.exports = {
         try {
             userModel.findOne({ email: request.body.email }, async (err, result) => {
                 if (err) {
-                    return res.status(500).send({
+                    return await res.status(500).send({
                         responseMessage: "Internal server error",
                         responseCode: 500,
                         error: err,
                     });
                 } else if (result) {
-                    return responce.status(401).send({
+                    return await responce.status(401).send({
                         responseMessage: "email already exists..!!",
                         responseCode: 401,
                     });
@@ -79,18 +81,20 @@ module.exports = {
                         }
                     });
 
+
                     request.body.password = await bcrypt.hash(request.body.password, 10);
-                    userModel(request.body).save((err1) => {
+                    userModel(request.body).save( async(err1, res2) => {
                         if (err1) {
-                            return responce.status(500).send({
+                            return await responce.status(500).send({
                                 responseMessage: "Internal server error",
                                 responseCode: 500,
                             });
                         } else {
                             console.log("Signup Success...!!");
-                            return responce.status(200).send({
+                            return await responce.status(200).send({
                                 responseMessage: "Signup Success...!!",
                                 responseCode: 200,
+                                responsResult:[res2]
                             });
                         }
                     });
@@ -99,7 +103,7 @@ module.exports = {
         } catch (error) {
             console.log("Something Went Woring..!");
             console.log(error);
-            return responce.status(400).send({
+            return await responce.status(400).send({
                 responseMessage: "Something went Worng..!!",
                 responseCode: 400
             });
@@ -232,7 +236,7 @@ module.exports = {
         }
     },
 
-    ViewsDocuments: async (request, responce) => {
+    ViewsProfile: async (request, responce) => {
         try {
             userModel.findOne({ email: request.body.email }, async (err, result) => {
                 if (err) {
@@ -246,6 +250,38 @@ module.exports = {
                     return await responce.send(result)
                 }
             });
+        } catch (error) {
+            console.log(error);
+            return responce.status(502).send({
+                responseMessage: "Something went Wrong...!!",
+                responseCode: 502,
+            });
+        }
+    },
+
+    ViewsDocuments: async (request, responce) => {
+        try {
+            if(request.body.email == "admin@gmail.com") {
+                userModel.find({ status : "Active"}, async (err, result) => {
+                    if (err) {
+                        return responce.status(500).send({
+                            responseMessage: "Internal Server Error..!!",
+                            responseCode: 500,
+                        });
+                    }
+                    else {
+                        console.log(result);
+                        return await responce.send(result)
+                    }
+                });
+            }
+            else {
+                return responce.status(400).send({
+                    responseMessage: "you are not admin..!!!",
+                    responseCode: 400,
+                });
+            }
+            
         } catch (error) {
             console.log(error);
             return responce.status(502).send({
@@ -398,6 +434,140 @@ module.exports = {
         });
     },
 
+    resend: async (request, responce) => {
+        try {
+            userModel.findOne({ email: request.body.email }, async (err, result) => {
+                if (err) {
+                    return await responce.status(404).send({
+                        responseMessage: "Email is not In the Database..!!",
+                        responseCode: 404,
+                    });
+                } else {
+                    if (result) {
+                        let newotp = common.generateOtp();
+                        let expTimeOtp = Date.now() + 180000;
+
+                        const transporter = nodemailer.createTransport({
+                            host: "smtp.gmail.com",
+                            port: 587,
+                            secure: false,
+                            requireTLS: true,
+                            auth: {
+                                user: "fortestingpurpose0077@gmail.com",
+                                pass: "bztzdeyoecetitik",
+                            },
+                        });
+
+                        const mailOptions = {
+                            from: "fortestingpurpose0077@gmail.com",
+                            to: request.body.email,
+                            subject: "OTP veryfication..",
+                            html:
+                                "<p> Hii " +
+                                ", Your new OTP is " +
+                                newotp +
+                                " Verify your OTP</a>",
+                        };
+
+                        transporter.sendMail(mailOptions, function (error, info) {
+                            if (error) {
+                                console.log(error);
+                            } else {
+                                console.log("mail has been sent:- ", info.response);
+                            }
+                        });
+
+                        // console.log(res1._id);
+                        userModel.findByIdAndUpdate(
+                            { _id: result._id },
+                            { $set: { otp: newotp, otpTime: expTimeOtp } },
+                            { new: true },
+                            async (err, Data) => {
+                                if (Data) {
+                                    responce.status(200).json({
+                                        responseCode: 200,
+                                        responsMessage: "check your mail OTP is send :) ",
+                                        responseResult: Data,
+                                    });
+                                } else {
+                                    return await responce.status(203).json({
+                                        responseCode: 203,
+                                        responseMesage: "invalid user",
+                                        responsResult: [],
+                                    });
+                                }
+                            }
+                        );
+                    }
+                }
+            });
+        } catch (error) {
+            console.log("Something Went Woring..!");
+            return await responce.status(502).send({ responseCode: "Something went Worng..!!" });
+
+        }
+    },
+
+    pegination: async(request, responce)=> {
+        try {
+            const page = request.body.page;
+            const sort = request.body.sort;
+            var page_data;
+            var skip;
+
+            if(page<=1) {
+                skip =0;
+            }
+            else {
+                skip = (page-1)*2
+            }
+            if(sort) {
+                page_data = await userModel.find().sort({name:1}).skip(skip).limit(2);
+            }
+            else{
+                page_data = await userModel.find().skip(skip).limit(2);
+            }
+            return await responce.status(200).json({
+                responseCode: 200,
+                data: page_data
+            });
+
+        } catch (error) {
+            return await responce.status(400).json({
+                responseCode: 400,
+                responseMesage: "something went worng...!!!",
+            });
+        }
+    },
+
+    QRcode: async(request, responce) => {
+        try {
+            const QRdata = request.body.name;
+            QRcode.toDataURL(QRdata, QR = async(err, url)=>{
+                if(err) {
+                    return await responce.status(400).json({
+                        responseCode: 400,
+                        responseMesage: "Internal server error...!!!",
+                    });
+                }
+                else {
+                    console.log(url);
+                    return await responce.status(200).json({
+                        responseCode: 200,
+                        responseMesage: "QR code success...!!!",
+                        data : url
+                    });
+                }
+                
+            })
+        } catch (error) {
+            return await responce.status(400).json({
+                responseCode: 400,
+                responseMesage: "something went worng...!!!",
+            });
+        }
+    },
+
     test: (req, res) => {
         let input = req.body.input;
         if (input == "success") {
@@ -445,3 +615,20 @@ module.exports = {
     },
 
 };
+
+
+
+
+
+
+
+
+/*
+aggregation
+cron job
+file system
+multer
+
+FCM     //  on live project.....
+payment Gateway    // on live project 
+*/

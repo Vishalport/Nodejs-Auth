@@ -1,4 +1,4 @@
-const {Schema,model} = require('mongoose')
+const {Schema,model, SchemaTypeOptions} = require('mongoose')
 
 const user = new Schema({
     firstName : {
@@ -31,6 +31,10 @@ const user = new Schema({
     },
     otpTime : {
         type : String
+    },
+    status : {
+        type : String,
+        default : "Active"
     }
 })
 
