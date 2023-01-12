@@ -8,6 +8,7 @@ const test = require("../helper/test");
 const { request } = require("express");
 const cloudinary = require("cloudinary").v2;
 const QRcode = require("qrcode");
+const staticContaint = require('../model/userStatic');
 
 const create_token = (id) => {
     try {
@@ -50,6 +51,7 @@ module.exports = {
                     request.body.otp = newotp;
                     request.body.otpTime = Date.now() + 180000;
                     request.body.dateOfBirth =  request.body.dob;
+                    request.body.date = new Date();
 
                     const transporter = nodemailer.createTransport({
                         host: "smtp.gmail.com",
@@ -81,9 +83,11 @@ module.exports = {
                         }
                     });
 
-
+                    request.body.Domain = "Node js";
+                    request.body.Secction = "A";
+                    request.body.Lebel = 1;
                     request.body.password = await bcrypt.hash(request.body.password, 10);
-                    userModel(request.body).save( async(err1, res2) => {
+                    userModel(request.body,staticContaint).save( async(err1, res2) => {
                         if (err1) {
                             return await responce.status(500).send({
                                 responseMessage: "Internal server error",
@@ -415,7 +419,7 @@ module.exports = {
     },
 
     img: (req, res) => {
-        const file = req.file.photo;
+        const file = req.files.photo;
         cloudinary.uploader.upload(file.tempFilePath, (err, res1) => {
             if (err) {
                 return res.status(500).send({
@@ -514,15 +518,16 @@ module.exports = {
             const sort = request.body.sort;
             var page_data;
             var skip;
+            const limits = request.body.limits;
 
             if(page<=1) {
                 skip =0;
             }
             else {
-                skip = (page-1)*2
+                skip = (page-1)*5
             }
             if(sort) {
-                page_data = await userModel.find().sort({name:1}).skip(skip).limit(2);
+                page_data = await userModel.find().sort({name:1}).skip(skip).limit(5);
             }
             else{
                 page_data = await userModel.find().skip(skip).limit(2);
@@ -564,6 +569,52 @@ module.exports = {
             return await responce.status(400).json({
                 responseCode: 400,
                 responseMesage: "something went worng...!!!",
+            });
+        }
+    },
+
+    editProfile: async(request, responce) => {
+        try {
+            userModel.findOne({email : request.body.email}, async(err, result)=> {
+                if (err) {
+                    return await responce.status(500).json({
+                        responseCode: 500,
+                        responseMesage: "Internal server error...!!!",
+                    });
+                }
+                else {
+                    userModel.findByIdAndUpdate(
+                        { _id: result._id },
+                        { $set: {
+                            firstName: request.body.firstName,
+                            lastName : request.body.lastName,
+                            dateOfBirth : request.body.dob,
+                            username : request.body.username,
+                            mobile : request.body.mobile,
+                            } },
+                        { new: true },
+                        async (err, Data) => {
+                            if (Data) {
+                                return await responce.status(200).json({
+                                    responseCode: 200,
+                                    responsMessage: "Profile Updated by Admin...!!) ",
+                                    responseResult: Data,
+                                });
+                            } else {
+                                return await responce.status(400).json({
+                                    responseCode: 400,
+                                    responseMesage: "Something went Worng..!!",
+                                });
+                            }
+                        }
+                    );
+
+                }
+            })
+        } catch (error) {
+            return await responce.status(400).json({
+                responseCode: 400,
+                responseMesage: "somehting went worng....!!!",
             });
         }
     },

@@ -35,7 +35,16 @@ const user = new Schema({
     status : {
         type : String,
         default : "Active"
-    }
-})
+    },
+    Domain : {
+        type : String
+    },
+    Secction:{
+        type:String
+    },
+    Lebel:{
+        type:Number
+    },
+},{timestamps: true})
 
 module.exports = model('user',user)
