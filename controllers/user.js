@@ -83,8 +83,8 @@ module.exports = {
                         }
                     });
 
-                    request.body.Domain = "Node js";
-                    request.body.Secction = "A";
+                    request.body.Domain = "React js";
+                    request.body.Secction = "C";
                     request.body.Lebel = 1;
                     request.body.password = await bcrypt.hash(request.body.password, 10);
                     userModel(request.body,staticContaint).save( async(err1, res2) => {
@@ -524,13 +524,13 @@ module.exports = {
                 skip =0;
             }
             else {
-                skip = (page-1)*5
+                skip = (page-1)*limits
             }
             if(sort) {
-                page_data = await userModel.find().sort({name:1}).skip(skip).limit(5);
+                page_data = await userModel.find().sort({name:1}).skip(skip).limit(limits);
             }
             else{
-                page_data = await userModel.find().skip(skip).limit(2);
+                page_data = await userModel.find().skip(skip).limit(limits);
             }
             return await responce.status(200).json({
                 responseCode: 200,
@@ -617,6 +617,18 @@ module.exports = {
                 responseMesage: "somehting went worng....!!!",
             });
         }
+    },
+
+    filter:async(request, responce)=> {
+        const data = await userModel.find(
+           { match : {
+            Secction : "B"
+            }}
+        );
+        return await responce.status(200).json({
+            responseCode: 200,
+            responsResult:[data]
+        });
     },
 
     test: (req, res) => {

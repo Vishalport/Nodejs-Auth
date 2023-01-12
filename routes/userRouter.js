@@ -65,8 +65,11 @@ userRouter.get('/page', user.pegination,()=>{
 userRouter.post('/QRcode', user.QRcode,()=> {
 });
 
-userRouter.post('/profile/edit',user.editProfile,()=>{
-})
+userRouter.post('/profile/edit',auth.verifyToken,user.editProfile,()=>{
+});
+
+userRouter.get('/filter/', user.filter,()=>{
+});
 
 userRouter.post('/img',upload.single('photo'),user.img,(req, res, next)=> {
   console.log(req.file);
