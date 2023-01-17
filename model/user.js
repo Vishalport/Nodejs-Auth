@@ -45,6 +45,10 @@ const user = new Schema({
     Lebel:{
         type:Number
     },
+    profile : {
+        type : String,
+        default : "https://res.cloudinary.com/dhdvtnehi/image/upload/v1673858405/userProfile_mxee1j.png"
+    }
 },{timestamps: true})
 
 module.exports = model('user',user)

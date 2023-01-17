@@ -11,17 +11,18 @@ module.exports = {
         }
         try {
             const decode = jwt.verify(token, config.key, function(err, Data){
+
                 if(err) {
-                    res.status(403).send(err)
+                    res.status(403).send("internal server Error....!!", err)
                 }
                 else {
-                    res.status(403).send(Data)
+                    res.status(403).send(Data) 
                 }
             });
             req.token = decode;
             res.status(200).send("Token: verifyed..!!")
         } catch (error) {
-            res.status(400).send("Invalid Token...!!")
+            res.status(400).send("nvalid Token...!!")
         }
         return next();
     },

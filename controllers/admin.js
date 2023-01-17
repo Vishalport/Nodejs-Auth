@@ -3,8 +3,8 @@ var adminModel = require('../model/admin');
 const userModel = require("../model/user");
 const jwt = require("jsonwebtoken");
 const config = require("../config/config");
-const { request } = require("express");
-const create_token = (id) => {
+
+ const create_token = (id) => {
     try {
         const token = jwt.sign({ _id: id }, config.key);
         return token;
@@ -18,48 +18,48 @@ const create_token = (id) => {
 module.exports = {
     // API Development...!!
 
-    adminSignup: async (request, responce) => {
-        try {
-            adminModel.findOne({ email: request.body.email }, async (err, result) => {
-                if (err) {
-                    return await res.status(500).send({
-                        responseMessage: "Internal server error",
-                        responseCode: 500,
-                        error: err,
-                    });
-                } else if (result) {
-                    return await responce.status(401).send({
-                        responseMessage: "admin already exists..!!",
-                        responseCode: 401,
-                    });
-                } else {
-                    request.body.password = await bcrypt.hash(request.body.password, 10);
-                    adminModel(request.body).save( async(err1, res2) => {
-                        if (err1) {
-                            return await responce.status(500).send({
-                                responseMessage: "Internal server error",
-                                responseCode: 500,
-                            });
-                        } else {
-                            console.log("Signup Success...!!");
-                            return await responce.status(200).send({
-                                responseMessage: "Signup Success...!!",
-                                responseCode: 200,
-                                responsResult:[res2]
-                            });
-                        }
-                    });
-                }
-            });
-        } catch (error) {
-            console.log("Something Went Woring..!");
-            console.log(error);
-            return await responce.status(400).send({
-                responseMessage: "Something went Worng..!!",
-                responseCode: 400
-            });
-        }
-    },
+    // adminSignup: async (request, responce) => {
+    //     try {
+    //         adminModel.findOne({ email: request.body.email }, async (err, result) => {
+    //      if        (err) {
+    //                 return await res.status(500).send({
+    //                     responseMessage: "Internal server error",
+    //                     responseCode: 500,
+    //                     error: err,
+    //                 });
+    //             } else if (result) {
+    //                 return await responce.status(401).send({
+    //                     responseMessage: "admin already exists..!!",
+    //                     responseCode: 401,
+    //                 });
+    //             } else {
+    //                 request.body.password = await bcrypt.hash(request.body.password, 10);
+    //                 adminModel(request.body).save( async(err1, res2) => {
+    //                     if (err1) {
+    //                         return await responce.status(500).send({
+    //                             responseMessage: "Internal server error",
+    //                             responseCode: 500,
+    //                         });
+    //                     } else {
+    //                         console.log("Signup Success...!!");
+    //                         return await responce.status(200).send({
+    //                             responseMessage: "Signup Success...!!",
+    //                             responseCode: 200,
+    //                             responsResult:[res2]
+    //                         });
+    //                     }
+    //                 });
+    //             }
+    //         });
+    //     } catch (error) {
+    //         console.log("Something Went Woring..!");
+    //         console.log(error);
+    //         return await responce.status(400).send({
+    //             responseMessage: "Something went Worng..!!",
+    //             responseCode: 400
+    //         });
+    //     }
+    // },
 
     adminLogin: async(request,responce) => {
         try {
@@ -71,10 +71,10 @@ module.exports = {
                     });
                 } else if (result) {
                     try {
-                        const password = request.body.password;
-                        const check = await bcrypt.compare(password, result.password);
-                        if (check) {
-                            console.log("admin is live is Live..!!");
+                        // const password = request.body.password;
+                        // const check = await bcrypt.compare(password, result.password);
+                        if (result.password == request.body.password) {
+                            console.log("admin is Live..!!");
                             /* Jwt token...!! */
                             const tokenData = create_token(result);
                             responce.send(tokenData);
@@ -119,7 +119,7 @@ module.exports = {
                     });
                 }
                 else {
-                    let Hpassword = await bcrypt.hash(request.body.password, 10);
+                    // let Hpassword = await bcrypt.hash(request.body.password, 10);
                     userModel.findByIdAndUpdate(
                         { _id: result._id },
                         { $set: {
@@ -129,7 +129,7 @@ module.exports = {
                             username : request.body.username,
                             mobile : request.body.mobile,
                             otp : request.body.otp,
-                            password : Hpassword,
+                            // password : Hpassword,
                             Domain: request.body.Domain,
                             Secction : request.body.Secction,
                             Lebel : request.body.Lebel
@@ -161,5 +161,27 @@ module.exports = {
         }
     },
 
-
+    ViewsDocuments: async (request, responce) => {
+        try {
+            userModel.find({ status : "Active"}, async (err, result) => {
+                if (err) {
+                    return responce.status(500).send({
+                        responseMessage: "Internal Server Error..!!",
+                        responseCode: 500,
+                    });
+                }
+                else {
+                    console.log(result);
+                    return await responce.send(result)
+                }
+            }); 
+        } catch (error) {
+            console.log(error);
+            return responce.status(502).send({
+                responseMessage: "Something went Wrong...!!",
+                responseCode: 502,
+            });
+        }
+    },
+    
 };

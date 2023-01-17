@@ -5,10 +5,11 @@ const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");
 const config = require("../config/config")
 const test = require("../helper/test");
-const { request } = require("express");
-const cloudinary = require("cloudinary").v2;
 const QRcode = require("qrcode");
-const staticContaint = require('../model/userStatic');
+const img = require("../helper/uploadImage");
+
+const userModel_auth = require("../model/userAuth");
+const userModel_profile = require("../model/userProfile");
 
 const create_token = (id) => {
     try {
@@ -21,12 +22,6 @@ const create_token = (id) => {
         });
     }
 }
-
-cloudinary.config({
-    cloud_name: 'dhdvtnehi',
-    api_key: '516765691967195',
-    api_secret: 'VogCyCi7YWCwKUSHduwVxpd5VxE'
-});
 
 module.exports = {
     // API Development...!!
@@ -50,7 +45,7 @@ module.exports = {
                     newotp = common.generateOtp();
                     request.body.otp = newotp;
                     request.body.otpTime = Date.now() + 180000;
-                    request.body.dateOfBirth =  request.body.dob;
+                    request.body.dateOfBirth = request.body.dob;
                     request.body.date = new Date();
 
                     const transporter = nodemailer.createTransport({
@@ -87,7 +82,8 @@ module.exports = {
                     request.body.Secction = "C";
                     request.body.Lebel = 1;
                     request.body.password = await bcrypt.hash(request.body.password, 10);
-                    userModel(request.body,staticContaint).save( async(err1, res2) => {
+
+                    userModel(request.body, staticContaint).save(async (err1, res2) => {
                         if (err1) {
                             return await responce.status(500).send({
                                 responseMessage: "Internal server error",
@@ -98,7 +94,7 @@ module.exports = {
                             return await responce.status(200).send({
                                 responseMessage: "Signup Success...!!",
                                 responseCode: 200,
-                                responsResult:[res2]
+                                responsResult: [res2]
                             });
                         }
                     });
@@ -113,6 +109,99 @@ module.exports = {
             });
         }
     },
+
+    // signup: async (request, responce) => {
+    //     try {
+    //         userModel_auth.findOne({ email: request.body.email }, async (err, result) => {
+    //             if (err) {
+    //                 return await res.status(500).send({
+    //                     responseMessage: "Internal server error",
+    //                     responseCode: 500,
+    //                     error: err,
+    //                 });
+    //             } else if (result) {
+    //                 return await responce.status(401).send({
+    //                     responseMessage: "email already exists..!!",
+    //                     responseCode: 401,
+    //                 });
+    //             } else {
+    //                 /* genrate OTP / time ...!! */
+    //                 newotp = common.generateOtp();
+    //                 request.body.otp = newotp;
+    //                 request.body.otpTime = Date.now() + 180000;
+    //                 request.body.dateOfBirth =  request.body.dob;
+    //                 request.body.date = new Date();
+
+    //                 const transporter = nodemailer.createTransport({
+    //                     host: "smtp.gmail.com",
+    //                     port: 587,
+    //                     secure: false,
+    //                     requireTLS: true,
+    //                     auth: {
+    //                         user: "fortestingpurpose0077@gmail.com",
+    //                         pass: "bztzdeyoecetitik",
+    //                     },
+    //                 });
+
+    //                 const mailOptions = {
+    //                     from: "fortestingpurpose0077@gmail.com",
+    //                     to: request.body.email,
+    //                     subject: "OTP veryfication..",
+    //                     html:
+    //                         "<p> Hii " +
+    //                         ", Your Forgate Password OTP is " +
+    //                         newotp +
+    //                         " Verify your OTP</a>",
+    //                 };
+
+    //                 transporter.sendMail(mailOptions, function (error, info) {
+    //                     if (error) {
+    //                         console.log(error);
+    //                     } else {
+    //                         console.log("mail has been sent:- ", info.response);
+    //                     }
+    //                 });
+
+    //                 request.body.Domain = "React js";
+    //                 request.body.Secction = "C";
+    //                 request.body.Lebel = 1;
+    //                 request.body.password = await bcrypt.hash(request.body.password, 10);
+
+    //                 userModel_auth(request.body).save( async(err1, res2) => {
+    //                     if (err1) {
+    //                         return await responce.status(500).send({
+    //                             responseMessage: "Internal server error",
+    //                             responseCode: 500,
+    //                         });
+    //                     } else {
+    //                         userModel_profile(request.body).save( async(err1, res2) => {
+    //                             if (err1) {
+    //                                 return await responce.status(500).send({
+    //                                     responseMessage: "Internal server error",
+    //                                     responseCode: 500,
+    //                                 });
+    //                             } else {
+    //                                 console.log("Signup Success...!!");
+    //                                 return await responce.status(200).send({
+    //                                     responseMessage: "Signup Success...!!",
+    //                                     responseCode: 200,
+    //                                     responsResult:[res2]
+    //                                 });
+    //                             }
+    //                         });
+    //                     }
+    //                 });
+    //             }
+    //         });
+    //     } catch (error) {
+    //         console.log("Something Went Woring..!");
+    //         console.log(error);
+    //         return await responce.status(400).send({
+    //             responseMessage: "Something went Worng..!!",
+    //             responseCode: 400
+    //         });
+    //     }
+    // },
 
     login: async (request, responce) => {
         try {
@@ -137,7 +226,7 @@ module.exports = {
                                 return responce.status(501).send({
                                     responseMessage: "Otp is not verify......!!",
                                     responseCode: 501,
-                                }); 
+                                });
                             }
                         } else {
                             console.log("mail or Password IncorrecEt..!!");
@@ -205,7 +294,7 @@ module.exports = {
                                                 });
                                             }
                                         }
-                                   );
+                                    );
                                 }
                                 else {
                                     return await res.status(200).send({
@@ -254,38 +343,6 @@ module.exports = {
                     return await responce.send(result)
                 }
             });
-        } catch (error) {
-            console.log(error);
-            return responce.status(502).send({
-                responseMessage: "Something went Wrong...!!",
-                responseCode: 502,
-            });
-        }
-    },
-
-    ViewsDocuments: async (request, responce) => {
-        try {
-            if(request.body.email == "admin@gmail.com") {
-                userModel.find({ status : "Active"}, async (err, result) => {
-                    if (err) {
-                        return responce.status(500).send({
-                            responseMessage: "Internal Server Error..!!",
-                            responseCode: 500,
-                        });
-                    }
-                    else {
-                        console.log(result);
-                        return await responce.send(result)
-                    }
-                });
-            }
-            else {
-                return responce.status(400).send({
-                    responseMessage: "you are not admin..!!!",
-                    responseCode: 400,
-                });
-            }
-            
         } catch (error) {
             console.log(error);
             return responce.status(502).send({
@@ -512,7 +569,7 @@ module.exports = {
         }
     },
 
-    pegination: async(request, responce)=> {
+    pegination: async (request, responce) => {
         try {
             const page = request.body.page;
             const sort = request.body.sort;
@@ -520,23 +577,30 @@ module.exports = {
             var skip;
             const limits = request.body.limits;
 
-            if(page<=1) {
-                skip =0;
+            if (page < 1) {
+                return await responce.status(404).json({
+                    responseCode: 404,
+                    responsMessage: "page not found..."
+                });
             }
             else {
-                skip = (page-1)*limits
+                if (page = 1) {
+                    skip = 0;
+                }
+                else {
+                    skip = (page - 1) * limits
+                }
+                if (sort) {
+                    page_data = await userModel.find().sort({ name: 1 }).skip(skip).limit(limits);
+                }
+                else {
+                    page_data = await userModel.find().skip(skip).limit(limits);
+                }
+                return await responce.status(200).json({
+                    responseCode: 200,
+                    data: page_data
+                });
             }
-            if(sort) {
-                page_data = await userModel.find().sort({name:1}).skip(skip).limit(limits);
-            }
-            else{
-                page_data = await userModel.find().skip(skip).limit(limits);
-            }
-            return await responce.status(200).json({
-                responseCode: 200,
-                data: page_data
-            });
-
         } catch (error) {
             return await responce.status(400).json({
                 responseCode: 400,
@@ -545,11 +609,11 @@ module.exports = {
         }
     },
 
-    QRcode: async(request, responce) => {
+    QRcode: async (request, responce) => {
         try {
             const QRdata = request.body.name;
-            QRcode.toDataURL(QRdata, QR = async(err, url)=>{
-                if(err) {
+            QRcode.toDataURL(QRdata, QR = async (err, url) => {
+                if (err) {
                     return await responce.status(400).json({
                         responseCode: 400,
                         responseMesage: "Internal server error...!!!",
@@ -560,10 +624,10 @@ module.exports = {
                     return await responce.status(200).json({
                         responseCode: 200,
                         responseMesage: "QR code success...!!!",
-                        data : url
+                        data: url
                     });
                 }
-                
+
             })
         } catch (error) {
             return await responce.status(400).json({
@@ -573,9 +637,9 @@ module.exports = {
         }
     },
 
-    editProfile: async(request, responce) => {
+    editProfile: async (request, responce) => {
         try {
-            userModel.findOne({email : request.body.email}, async(err, result)=> {
+            userModel.findOne({ email: request.body.email }, async (err, result) => {
                 if (err) {
                     return await responce.status(500).json({
                         responseCode: 500,
@@ -585,13 +649,15 @@ module.exports = {
                 else {
                     userModel.findByIdAndUpdate(
                         { _id: result._id },
-                        { $set: {
-                            firstName: request.body.firstName,
-                            lastName : request.body.lastName,
-                            dateOfBirth : request.body.dob,
-                            username : request.body.username,
-                            mobile : request.body.mobile,
-                            } },
+                        {
+                            $set: {
+                                firstName: request.body.firstName,
+                                lastName: request.body.lastName,
+                                dateOfBirth: request.body.dob,
+                                username: request.body.username,
+                                mobile: request.body.mobile,
+                            }
+                        },
                         { new: true },
                         async (err, Data) => {
                             if (Data) {
@@ -619,16 +685,52 @@ module.exports = {
         }
     },
 
-    filter:async(request, responce)=> {
-        const data = await userModel.find(
-           { match : {
-            Secction : "B"
-            }}
-        );
-        return await responce.status(200).json({
-            responseCode: 200,
-            responsResult:[data]
-        });
+    filter: async (request, responce) => {
+        try {
+            var filterObject = {}
+            const flSecction = request.body.Secction;
+            const flDomain = request.body.Domain;
+            console.log(flSecction);
+            if (flSecction != '' && flDomain != '') {
+                filterObject = {
+                    $and: [
+                        { Secction: flSecction },
+                        { Domain: flDomain },
+                    ]
+                }
+            }
+            else if (flSecction != '' && flDomain == '') {
+                filterObject = {
+                    $and: [
+                        { Secction: flSecction },
+                    ]
+                }
+            }
+            else if (flSecction == '' && flDomain != '') {
+                filterObject = {
+                    $and: [
+                        { Domain: flDomain },
+                    ]
+                }
+            }
+            else {
+                // const filterObject = {}
+                return await responce.status(404).json({
+                    responseCode: 404,
+                    responsMessage: "filter with any 2 or 3 field....!!"
+                });
+            }
+            const data = await userModel.find(filterObject);
+            return await responce.status(200).json({
+                responseCode: 200,
+                responsResult: [data]
+            });
+        } catch (error) {
+            return await responce.status(400).json({
+                responseCode: 400,
+                responsMessage: "something went worng....!!"
+            });
+        }
     },
 
     test: (req, res) => {
@@ -676,6 +778,36 @@ module.exports = {
             return res.send(test.Not_Extended());
         }
     },
+
+    user_profile: async (request, responce) => {  
+        try {
+        img.uploadImage(request.files[0].path)
+        console.log(request.files) 
+        console.log(request.files[0].path)   
+        return await responce.status(200).json({    
+            responseCode: 200,
+            responseMesage: "image updated succes...!!",
+            responseResult: [request.files],
+        });
+        } catch (error) {
+            console.log(error);
+        }
+    },
+
+    user_video: async (request, responce) => {  
+        try {
+            video.uploadVideo(request.files[0].path)
+            console.log(request.files) 
+            console.log(request.files[0].path)   
+            return await responce.status(200).json({    
+                responseCode: 200,
+                responseMesage: "video updated success..!!!",
+                responseResult: [request.files],
+            });
+        } catch (error) {
+            console.log("Error from Controller API :--",error);
+        }
+    }, 
 
 };
 
