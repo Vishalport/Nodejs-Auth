@@ -22,4 +22,4 @@ const userAuth = new Schema({
     },
 },{timestamps: true})
 
-module.exports = model('userAuth',userAuth)
+module.exports = model('userAuth',userAuth);

@@ -3,6 +3,8 @@ var adminModel = require('../model/admin');
 const userModel = require("../model/user");
 const jwt = require("jsonwebtoken");
 const config = require("../config/config");
+const Product_Model = require("../model/Admin_Products");
+const StaticModal = require("../model/StaticContaint")
 
  const create_token = (id) => {
     try {
@@ -183,5 +185,184 @@ module.exports = {
             });
         }
     },
+
+    StaticContaint: async (request, responce) => {
+        try {
+            StaticModal.findOne({ title: request.body.title }, async (err, result) => {
+                if (err) {
+                    return await responce.status(500).json({
+                        responseCode: 500,
+                        responseMesage: "Internal server error...!!!",
+                    });
+                }
+                else {
+                    StaticModal.findByIdAndUpdate(
+                        { _id: result._id },
+                        {
+                            $set: {
+                                type: request.body.type,
+                                discription: request.body.discription,
+                                title: request.body.title
+                            }
+                        },
+                        { new: true },
+                        async (err, Data) => {
+                            if (Data) {
+                                return await responce.status(200).json({
+                                    responseCode: 200,
+                                    responsMessage: "update in Static Containt...!!) ",
+                                    responseResult: Data,
+                                });
+                            } else {
+                                return await responce.status(400).json({
+                                    responseCode: 400,
+                                    responseMesage: "Something went Worng..!!",
+                                });
+                            }
+                        }
+                    );
+
+                }
+            })
+        } catch (error) {
+            return await responce.status(400).json({
+                responseCode: 400,
+                responseMesage: "somehting went worng....!!!",
+            });
+        }
+    },
+
+    add_Product : async (request, responce) => {
+        try {
+            Product_Model.findOne({Product_ID : request.body.Product_ID}, async(err, result) => {
+                if(err) {
+                    return await responce.status(400).json({
+                        responseCode: 400,
+                        responsMessage: "something went worng....!"
+                    });
+                }
+                else if (result) {
+                    return await responce.status(201).json({
+                        responseCode: 201,
+                        responsMessage: "Product is allready added....!!"
+                    });
+                }
+                else {
+                    // request.body.Product_type = request.body.type;
+                    // request.body.Product_ID = request.body.id;
+                    // request.body.Product_qty = request.body.qty;
+                    // request.body.Manufacture_Date = request.body.Manufacture;
+                    // request.body.Expiry_Date = request.body.Expiry;
+                    // request.body.Name = request.body.Name;
+
+                    // if(type != '', id != '', qty != '', Manufacture !='', Expiry != '', Name != '') {
+                    // if(request.body.Product_type != '', request.body.Product_ID != '', request.body.Product_qty != '', request.body.Manufacture_Date !='', request.body.Expiry_Date != '', request.body.Name != '') { 
+                        Product_Model(request.body).save(async(err, res) => {
+                            if (err) {
+                                return await responce.status(201).send({
+                                    responseMessage: "Product is required...!!",
+                                    responseCode: 201,
+                                });
+                            }
+                            else {
+                                console.log("Product is added...!!");
+                                return await responce.status(200).send({
+                                    responseMessage: "Product is added...!!",
+                                    responseCode: 200,
+                                    responsResult: [res]
+                                });
+                            }
+                        })
+                    // }
+                    // else {
+                        // return await responce.status(201).send({
+                        //     responseMessage: "Product is required...!!",
+                        //     responseCode: 201,
+                        // });
+                    // }
+                }
+            })
+        } catch (error) {
+            return await responce.status(400).json({
+                responseCode: 400,
+                responsMessage: "something went worng....!!"
+            });
+        }
+    },
+
+    remove_Product : async(request, responce) => {
+        try {
+            Product_Model.findOne({Product_ID : request.body.Product_ID}, async(err, result) => {
+                if(err) {
+                    return await responce.status(400).json({
+                        responseCode: 400,
+                        responsMessage: "something went worng....!"
+                    });
+                }
+                else if(result) {
+                    Product_Model.findByIdAndDelete({ _id: result._id }, async(err, data) => {
+                        if (err){
+                            console.log(err);
+                            return await responce.status(400).json({
+                                responseCode: 400,
+                                responsMessage: "something went worng....!"
+                            });
+                        }
+                        else{
+                            console.log(" product is Deleted : ", data);
+                            return await responce.status(200).json({
+                                responseCode: 200,
+                                responsMessage: "Product is Deleted.....!",
+                                responsResult : data
+                            });
+                        }
+                    });
+                }
+                else {
+                    return await responce.status(201).json({
+                        responseCode: 201,
+                        responsMessage: "Product Not Found....!"
+                    });
+                }
+            })
+        } catch (error) {
+            return await responce.status(400).json({
+                responseCode: 400,
+                responsMessage: "something went worng....!!"
+            });
+        }
+    },
+
+    get_Product : async(request, responce) => {
+        try {
+            Product_Model.findOne({Product_ID : request.body.Product_ID}, async(err, result) => {
+                if(err) {
+                    return await responce.status(400).json({
+                        responseCode: 400,
+                        responsMessage: "something went worng....!"
+                    });
+                }
+                else if(result) {
+                    console.log(" Result.. : ", result);
+                    return await responce.status(200).json({
+                        responseCode: 200,
+                        responsMessage: "Result.. :",
+                        responsResult : result
+                    });
+                }
+                else {
+                    return await responce.status(201).json({
+                        responseCode: 201,
+                        responsMessage: "Product Not Found....!"
+                    });
+                }
+            })
+        } catch (error) {
+            return await responce.status(400).json({
+                responseCode: 400,
+                responsMessage: "something went worng....!!"
+            });
+        }
+    }
     
 };

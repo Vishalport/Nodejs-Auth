@@ -60,7 +60,7 @@ userRouter.post('/reset',user.resetPassword,()=> {
 userRouter.get('/token', auth.verifyToken,()=> {
 });
 
-userRouter.post('/resend', user.resend,()=> {
+userRouter.post('/resend',user.resend,()=> {
 });
 
 userRouter.get('/page', user.pegination,()=>{
@@ -70,10 +70,10 @@ userRouter.get('/page', user.pegination,()=>{
 userRouter.post('/QRcode', user.QRcode,()=> {
 });
 
-userRouter.post('/profile/edit',auth.verifyToken,user.editProfile,()=>{
+userRouter.post('/profile/edit',user.editProfile,()=>{
 });
 
-userRouter.get('/filter', user.filter,()=>{
+userRouter.get('/filter',user.filter,()=>{
 });
 
 userRouter.post('/img',upload.array('upload_pic'), user.user_profile,(req, res)=> {
@@ -88,6 +88,8 @@ userRouter.post('/video', videoUpload.array('upload_video'), user.user_video,(re
    res1.status(400).send({ error: error.message })
 })
 
+userRouter.post('/new/product', user.add_Product,()=>{
+})
 
 
 

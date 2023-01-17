@@ -14,6 +14,17 @@ adminRouter.post('/edit_User/Profile', admin.editUserProfile,()=>{
 adminRouter.get('/Views',admin.ViewsDocuments,()=> {
 });
 
+adminRouter.post('/edit/static',admin.StaticContaint,()=> {
+});
+
+adminRouter.post('/new/product',admin.add_Product,()=> {
+});
+
+adminRouter.post('/delete/product',admin.remove_Product,()=> {
+});
+
+adminRouter.get('/get/product',admin.get_Product,()=> {
+});
 
 
 
