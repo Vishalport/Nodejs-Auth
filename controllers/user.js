@@ -39,67 +39,83 @@ module.exports = {
                     });
                 } else if (result) {
                     return await responce.status(401).send({
-                        responseMessage: "email already exists..!!",
+                        responseMessage: "Email already exists..!!",
                         responseCode: 401,
                     });
                 } else {
-                    /* genrate OTP / time ...!! */
-                    newotp = common.generateOtp();
-                    request.body.otp = newotp;
-                    request.body.otpTime = Date.now() + 180000;
-                    request.body.dateOfBirth = request.body.dob;
-                    request.body.date = new Date();
-
-                    const transporter = nodemailer.createTransport({
-                        host: "smtp.gmail.com",
-                        port: 587,
-                        secure: false,
-                        requireTLS: true,
-                        auth: {
-                            user: "fortestingpurpose0077@gmail.com",
-                            pass: "bztzdeyoecetitik",
-                        },
-                    });
-
-                    const mailOptions = {
-                        from: "fortestingpurpose0077@gmail.com",
-                        to: request.body.email,
-                        subject: "OTP veryfication..",
-                        html:
-                            "<p> Hii " +
-                            ", Your Forgate Password OTP is " +
-                            newotp +
-                            " Verify your OTP</a>",
-                    };
-
-                    transporter.sendMail(mailOptions, function (error, info) {
-                        if (error) {
-                            console.log(error);
-                        } else {
-                            console.log("mail has been sent:- ", info.response);
-                        }
-                    });
-
-                    request.body.Domain = "React js";
-                    request.body.Secction = "C";
-                    request.body.Lebel = 1;
-                    request.body.password = await bcrypt.hash(request.body.password, 10);
-
-                    userModel(request.body).save(async (err1, res2) => {
-                        if (err1) {
-                            return await responce.status(500).send({
+                    userModel.findOne({ username: request.body.username},async (err, result1)=> {
+                        if (err) {
+                            return await res.status(500).send({
                                 responseMessage: "Internal server error",
                                 responseCode: 500,
+                                error: err,
                             });
-                        } else {
-                            console.log("Signup Success...!!");
-                            return await responce.status(200).send({
-                                responseMessage: "Signup Success...!!",
-                                responseCode: 200,
-                                responsResult: [res2]
+                        } else if (result1) {
+                            return await responce.status(401).send({
+                                responseMessage: "Username already Taken..!!",
+                                responseCode: 401,
                             });
                         }
-                    });
+                        else {
+                            /* genrate OTP / time ...!! */
+                            newotp = common.generateOtp();
+                            request.body.otp = newotp;
+                            request.body.otpTime = Date.now() + 180000;
+                            request.body.dateOfBirth = request.body.dob;
+                            request.body.date = new Date();
+
+                            const transporter = nodemailer.createTransport({
+                                host: "smtp.gmail.com",
+                                port: 587,
+                                secure: false,
+                                requireTLS: true,
+                                auth: {
+                                    user: "fortestingpurpose0077@gmail.com",
+                                    pass: "bztzdeyoecetitik",
+                                },
+                            });
+
+                            const mailOptions = {
+                                from: "fortestingpurpose0077@gmail.com",
+                                to: request.body.email,
+                                subject: "OTP veryfication..",
+                                html:
+                                    "<p> Hii " +
+                                    ", Your Forgate Password OTP is " +
+                                    newotp +
+                                    " Verify your OTP</a>",
+                            };
+
+                            transporter.sendMail(mailOptions, function (error, info) {
+                                if (error) {
+                                    console.log(error);
+                                } else {
+                                    console.log("mail has been sent:- ", info.response);
+                                }
+                            });
+
+                            request.body.Domain = "React js";
+                            request.body.Secction = "C";
+                            request.body.Lebel = 1;
+                            request.body.password = await bcrypt.hash(request.body.password, 10);
+
+                            userModel(request.body).save(async (err1, res2) => {
+                                if (err1) {
+                                    return await responce.status(500).send({
+                                        responseMessage: "Internal server error",
+                                        responseCode: 500,
+                                    });
+                                } else {
+                                    console.log("Signup Success...!!");
+                                    return await responce.status(200).send({
+                                        responseMessage: "Signup Success...!!",
+                                        responseCode: 200,
+                                        responsResult: [res2]
+                                    });
+                                }
+                            });
+                        }
+                    })
                 }
             });
         } catch (error) {
@@ -111,99 +127,6 @@ module.exports = {
             });
         }
     },
-
-    // signup: async (request, responce) => {
-    //     try {
-    //         userModel_auth.findOne({ email: request.body.email }, async (err, result) => {
-    //             if (err) {
-    //                 return await res.status(500).send({
-    //                     responseMessage: "Internal server error",
-    //                     responseCode: 500,
-    //                     error: err,
-    //                 });
-    //             } else if (result) {
-    //                 return await responce.status(401).send({
-    //                     responseMessage: "email already exists..!!",
-    //                     responseCode: 401,
-    //                 });
-    //             } else {
-    //                 /* genrate OTP / time ...!! */
-    //                 newotp = common.generateOtp();
-    //                 request.body.otp = newotp;
-    //                 request.body.otpTime = Date.now() + 180000;
-    //                 request.body.dateOfBirth =  request.body.dob;
-    //                 request.body.date = new Date();
-
-    //                 const transporter = nodemailer.createTransport({
-    //                     host: "smtp.gmail.com",
-    //                     port: 587,
-    //                     secure: false,
-    //                     requireTLS: true,
-    //                     auth: {
-    //                         user: "fortestingpurpose0077@gmail.com",
-    //                         pass: "bztzdeyoecetitik",
-    //                     },
-    //                 });
-
-    //                 const mailOptions = {
-    //                     from: "fortestingpurpose0077@gmail.com",
-    //                     to: request.body.email,
-    //                     subject: "OTP veryfication..",
-    //                     html:
-    //                         "<p> Hii " +
-    //                         ", Your Forgate Password OTP is " +
-    //                         newotp +
-    //                         " Verify your OTP</a>",
-    //                 };
-
-    //                 transporter.sendMail(mailOptions, function (error, info) {
-    //                     if (error) {
-    //                         console.log(error);
-    //                     } else {
-    //                         console.log("mail has been sent:- ", info.response);
-    //                     }
-    //                 });
-
-    //                 request.body.Domain = "React js";
-    //                 request.body.Secction = "C";
-    //                 request.body.Lebel = 1;
-    //                 request.body.password = await bcrypt.hash(request.body.password, 10);
-
-    //                 userModel_auth(request.body).save( async(err1, res2) => {
-    //                     if (err1) {
-    //                         return await responce.status(500).send({
-    //                             responseMessage: "Internal server error",
-    //                             responseCode: 500,
-    //                         });
-    //                     } else {
-    //                         userModel_profile(request.body).save( async(err1, res2) => {
-    //                             if (err1) {
-    //                                 return await responce.status(500).send({
-    //                                     responseMessage: "Internal server error",
-    //                                     responseCode: 500,
-    //                                 });
-    //                             } else {
-    //                                 console.log("Signup Success...!!");
-    //                                 return await responce.status(200).send({
-    //                                     responseMessage: "Signup Success...!!",
-    //                                     responseCode: 200,
-    //                                     responsResult:[res2]
-    //                                 });
-    //                             }
-    //                         });
-    //                     }
-    //                 });
-    //             }
-    //         });
-    //     } catch (error) {
-    //         console.log("Something Went Woring..!");
-    //         console.log(error);
-    //         return await responce.status(400).send({
-    //             responseMessage: "Something went Worng..!!",
-    //             responseCode: 400
-    //         });
-    //     }
-    // },
 
     login: async (request, responce) => {
         try {
@@ -244,9 +167,9 @@ module.exports = {
                         });
                     }
                 } else {
-                    console.log("Email is not Registerd..!!");
+                    console.log("user is not Registerd..!!");
                     return responce.status(404).send({
-                        responseMessage: "Email is Not Resitered..!!",
+                        responseMessage: "user is Not Resitered..!!",
                         responseCode: 404,
                     });
                     // return res.send(test.Bad_Request)
@@ -676,7 +599,6 @@ module.exports = {
                             }
                         }
                     );
-
                 }
             })
         } catch (error) {
@@ -861,31 +783,28 @@ module.exports = {
                 if(err) {
                     return await responce.status(400).json({
                         responseCode: 400,
-                        responsMessage: "something went worng....!"
+                        responsMessage: "Server Error....!"
                     });
                 }
                 else if (result) {
-                    var userProduct_ID = request.body.Product_ID + result.username
-                    user_Product_Model.findOne({Product_ID : userProduct_ID}, async(err, result) => {
+                    console.log(result.username)
+                    var userProduct_ID = request.body.Product_ID + "-" + result.username
+                    console.log(userProduct_ID);
+                    user_Product_Model.findOne({Product_ID : userProduct_ID}, async(err, result1) => {
                         if(err) {
                             return await responce.status(400).json({
                                 responseCode: 400,
-                                responsMessage: "something went worng....!"
+                                responsMessage: "Server Error....!"
                             });
                         }
-                        else if(!result) {
-                            return await responce.status(400).json({
-                                responseCode: 400,
-                                responsMessage: "User not found.....!"
-                            });
-                        }
-                        else if (result) {
+                        else if (result1) {
                             return await responce.status(201).json({
                                 responseCode: 201,
                                 responsMessage: "Product is allready added....!!"
                             });
                         }
                         else {
+                            request.body.Product_ID = userProduct_ID;
                             user_Product_Model(request.body).save(async(err, res) => {
                                 if (err) {
                                     return await responce.status(201).send({
@@ -905,6 +824,12 @@ module.exports = {
                         }
                     })
                 }
+                else {
+                    return await responce.status(404).send({
+                        responseMessage: "User Not Found.....!!",
+                        responseCode: 404,
+                    });
+                }
             })
         } catch (error) {
             return await responce.status(400).json({
@@ -913,6 +838,130 @@ module.exports = {
             });
         }
     },
+
+    get_Product : async(request, responce) => {
+        try {
+            userModel.findOne({email: request.body.email}, async(err, result) =>{
+                if(err) {
+                    return await responce.status(400).json({
+                        responseCode: 400,
+                        responsMessage: "Server Error....!"
+                    });
+                }
+                else if(!result) {
+                    return await responce.status(400).json({
+                        responseCode: 400,
+                        responsMessage: "user not found.....!"
+                    });
+                }
+                else {
+                    var userProduct_ID = request.body.Product_ID + "-" + result.username
+                    user_Product_Model.findOne({Product_ID : userProduct_ID}, async(err, result) => {
+                        if(err) {
+                            return await responce.status(400).json({
+                                responseCode: 400,
+                                responsMessage: "Server Error....!"
+                            });
+                        }
+                        else if(result) {
+                            console.log(" Result.. : ", result);
+                            return await responce.status(200).json({
+                                responseCode: 200,
+                                responsMessage: "Result.. :",
+                                responsResult : result
+                            });
+                        }
+                        else {
+                            return await responce.status(201).json({
+                                responseCode: 201,
+                                responsMessage: "Product Not Found....!"
+                            });
+                        }
+                    })
+                }
+            })
+        } catch (error) {
+            return await responce.status(500).json({
+                responseCode: 500,
+                responsMessage: "something went worng....!!"
+            });
+        }
+    },
+
+    update_product : async(request, responce) => {
+        try {
+            userModel.findOne({email: request.body.email}, async(err, result) =>{
+                if(err) {
+                    return await responce.status(400).json({
+                        responseCode: 400,
+                        responsMessage: "server Error....!"
+                    });
+                }
+                else if (!result) {
+                    return await responce.status(404).json({
+                        responseCode: 404,
+                        responsMessage: "user not found.....!"
+                    });
+                }
+                else {
+                    var userProduct_ID = request.body.Product_ID + "-" + result.username
+                    console.log(userProduct_ID);
+                    user_Product_Model.findOne({Product_ID : userProduct_ID}, async(err, result1) =>{
+                        if(err) {
+                            return await responce.status(400).json({
+                                responseCode: 400,
+                                responsMessage: "server error....!"
+                            });
+                        }
+                        else if(!result1) {
+                            return await responce.status(400).json({
+                                responseCode: 400,
+                                responsMessage: "Product not found.....!"
+                            });
+                        }
+                        else {
+                            console.log("...line working");
+                            // console.log(result._id);
+
+                            user_Product_Model.findByIdAndUpdate(
+                                { _id: result1._id },
+                                {
+                                    $set: {
+                                        Product_qty: request.body.Product_qty,
+                                        Manufacture_Date: request.body.Manufacture_Date,
+                                        Expiry_Date: request.body.Expiry_Date
+                                    }
+                                },
+                                { new: true },
+                                async (err, Data) => {
+                                    if (Data) {
+                                        return await responce.status(200).json({
+                                            responseCode: 200,
+                                            responsMessage: "Product Updated...!!) ",
+                                            responseResult: Data,
+                                        });
+                                    } else {
+                                        return await responce.status(500).json({
+                                            responseCode: 500,
+                                            responseMesage: "Something went Worng..!!",
+                                        });
+                                    }
+                                }
+                            );  
+                        }
+                    })
+                }
+            })
+        } catch (error) {
+            return await responce.status(500).json({
+                responseCode: 500,
+                responsMessage: "something went worng....!"
+            });
+        }
+    },
+
+    
+
 
 };
 

@@ -89,7 +89,14 @@ userRouter.post('/video', videoUpload.array('upload_video'), user.user_video,(re
 })
 
 userRouter.post('/new/product', user.add_Product,()=>{
-})
+});
+
+userRouter.get('/getproduct', user.get_Product,()=>{
+});
+
+userRouter.post('/update/product', user.update_product,()=>{
+});
+
 
 
 
