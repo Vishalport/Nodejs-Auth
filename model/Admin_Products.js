@@ -5,7 +5,7 @@ const Products = new Schema({
         type : String,
         required : [true, " Product type is required...!!"]
     },
-    name : {
+    Name : {
         type : String,
         require : [true, " Product Name is required...!!"]
     },
@@ -24,6 +24,9 @@ const Products = new Schema({
     Expiry_Date : {
         type:String,
         required : [true, " Dxpiry Date is required...!!"]
+    },
+    price : {
+        type : Number
     }
 },{timestamps: true});
 

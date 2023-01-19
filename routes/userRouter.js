@@ -88,8 +88,8 @@ userRouter.post('/video', videoUpload.array('upload_video'), user.user_video,(re
    res1.status(400).send({ error: error.message })
 })
 
-userRouter.post('/new/product', user.add_Product,()=>{
-});
+// userRouter.post('/new/product', user.add_Product,()=>{
+// });
 
 userRouter.get('/getproduct', user.get_Product,()=>{
 });
@@ -97,6 +97,14 @@ userRouter.get('/getproduct', user.get_Product,()=>{
 userRouter.post('/update/product', user.update_product,()=>{
 });
 
+userRouter.get('/product/search', user.Search_Product,()=>{
+});
+
+// userRouter.post('/Product/permission', user.get_product_permission,()=>{
+// });
+
+userRouter.post('/add-product', user.add_Product,()=>{
+});
 
 
 

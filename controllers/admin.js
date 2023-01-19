@@ -3,7 +3,7 @@ var adminModel = require('../model/admin');
 const userModel = require("../model/user");
 const jwt = require("jsonwebtoken");
 const config = require("../config/config");
-const Product_Model = require("../model/Admin_Products");
+const Product_Model = require("../model/Products");
 const StaticModal = require("../model/StaticContaint")
 
  const create_token = (id) => {

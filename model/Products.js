@@ -1,6 +1,6 @@
 const {Schema,model, SchemaTypeOptions} = require('mongoose')
 
-const user_Products = new Schema({
+const Products = new Schema({
     Product_type : {
         type : String,
         required : [true, " Product type is required...!!"]
@@ -24,7 +24,14 @@ const user_Products = new Schema({
     Expiry_Date : {
         type:String,
         required : [true, " Dxpiry Date is required...!!"]
-    }
+    },
+    size : {
+        type : String
+    },
+    price : {
+        type : Number
+    },
+
 },{timestamps: true});
 
-module.exports = model('user_Products',user_Products)
+module.exports = model('Products',Products)
