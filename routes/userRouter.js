@@ -100,8 +100,8 @@ userRouter.post('/update/product', user.update_product,()=>{
 userRouter.get('/product/search', user.Search_Product,()=>{
 });
 
-// userRouter.post('/Product/permission', user.get_product_permission,()=>{
-// });
+userRouter.post('/Product/permission', user.get_product_permission,()=>{
+});
 
 userRouter.post('/add-product', user.add_Product,()=>{
 });

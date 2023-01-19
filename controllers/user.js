@@ -775,9 +775,10 @@ module.exports = {
             console.log("Error from Controller API :--",error);
         }
     },
+
     add_Product : async (request, responce) => {
         try { 
-            user_Product_Model.findOne({Product_ID : request.body.Product_ID}, async(err, result) => {
+            Product_Model.findOne({Product_ID : request.body.Product_ID}, async(err, result) => {
                 if(err) {
                     return await responce.status(400).json({
                         responseCode: 400,
@@ -881,57 +882,57 @@ module.exports = {
     //     }
     // },
 
-    // get_product_permission: async(request, responce) =>{
-    //     userModel.findOne({_id : request.body.userID} , async (err, result) => {
-    //         if(err) {
-    //             return await responce.status(400).json({
-    //                 responseCode: 400,
-    //                 responsMessage: "Server Error....!"
-    //             });
-    //         }
-    //         else if (!result){
-    //             return await responce.status(404).json({
-    //                 responseCode: 404,
-    //                 responsMessage: "User not found with this ID...!"
-    //             });
-    //         }
-    //         else {
-    //             product_permission_Model(request.body).save( async(err, result1)=>{
-    //                 if (err) {
-    //                     return await responce.status(400).json({
-    //                         responseCode: 400,
-    //                         responsMessage: "Server Error....!"
-    //                     });
-    //                 }
-    //                 else {
-    //                     return await responce.status(200).json({
-    //                         responseCode: 200,
-    //                         responsMessage: "Permission made....!",
-    //                         responsResult : result1
-    //                     });
-    //                 }
+    get_product_permission: async(request, responce) =>{
+        userModel.findOne({_id : request.body.userID} , async (err, result) => {
+            if(err) {
+                return await responce.status(400).json({
+                    responseCode: 400,
+                    responsMessage: "Server Error....!"
+                });
+            }
+            else if (!result){
+                return await responce.status(404).json({
+                    responseCode: 404,
+                    responsMessage: "User not found with this ID...!"
+                });
+            }
+            else {
+                product_permission_Model(request.body).save( async(err, result1)=>{
+                    if (err) {
+                        return await responce.status(400).json({
+                            responseCode: 400,
+                            responsMessage: "Server Error....!"
+                        });
+                    }
+                    else {
+                        return await responce.status(200).json({
+                            responseCode: 200,
+                            responsMessage: "Permission made....!",
+                            responsResult : result1
+                        });
+                    }
 
-    //             })
-    //         }
-    //     })
-    // },
+                })
+            }
+        })
+    },
 
 
-    // very: (request,  responce) =>{
-    //     product_permission_Model.findOne({userID : request.body.id}, (err, res)=>{
-    //         if(err) {
-    //             console.log(err);
-    //         }
-    //         else {
-    //             if(res.permission == "active") {
-    //                 console.log("you are Active...!!");
-    //             }
-    //             else {
-    //                 console.log("User is not active.....!!");
-    //             }
-    //         }
-    //     })
-    // },
+    very: (request,  responce) =>{
+        product_permission_Model.findOne({userID : request.body.id}, (err, res)=>{
+            if(err) {
+                console.log(err);
+            }
+            else {
+                if(res.permission == "active") {
+                    console.log("you are Active...!!");
+                }
+                else {
+                    console.log("User is not active.....!!");
+                }
+            }
+        })
+    },
 
     add_Product : async (request, responce) => {
         try {
@@ -1017,7 +1018,6 @@ module.exports = {
             });
         }
     },
-
 
     get_Product : async(request, responce) => {
         try {
