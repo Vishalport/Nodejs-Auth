@@ -1,7 +1,7 @@
 const {Schema,model, SchemaTypeOptions, default: mongoose} = require('mongoose')
 
 const product_permission = new Schema({
-    userID : {
+    user_ID : {
         type : mongoose.Schema.Types.ObjectId,
         ref : 'user'
     },

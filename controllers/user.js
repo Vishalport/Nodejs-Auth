@@ -776,49 +776,56 @@ module.exports = {
         }
     },
 
-    add_Product : async (request, responce) => {
-        try { 
-            Product_Model.findOne({Product_ID : request.body.Product_ID}, async(err, result) => {
-                if(err) {
-                    return await responce.status(400).json({
-                        responseCode: 400,
-                        responsMessage: "something went worng....!!"
-                    });
-                }
-                else if (result) {
-                    return await responce.status(201).json({
-                        responseCode: 201,
-                        responsMessage: "Product is allready added....!!"
-                    });
-                }
-                else {
 
-                    Product_Model(request.body).save(async(err, res) => {
-                        if (err) {
-                            return await responce.status(500).send({
-                                responseMessage: "Server Error...!!",
-                                responseCode: 500,
-                            });
-                        }
-                        else {
-                            console.log("Product is added...!!");
-                            return await responce.status(200).send({
-                                responseMessage: "Product is added...!!",
-                                responseCode: 200,
-                                responsResult: [res]
-                            });
-                        }
-                    })
-                }
-            });
+// main add product.. is @here...
+    // add_Product : async (request, responce) => {
+    //     try { 
+    //         Product_Model.findOne({Product_ID : request.body.Product_ID}, async(err, result) => {
+    //             if(err) {
+    //                 return await responce.status(400).json({
+    //                     responseCode: 400,
+    //                     responsMessage: "something went worng....!!"
+    //                 });
+    //             }
+    //             else if (result) {
+    //                 return await responce.status(201).json({
+    //                     responseCode: 201,
+    //                     responsMessage: "Product is allready added....!!"
+    //                 });
+    //             }
+    //             else {
+
+    //                 Product_Model(request.body).save(async(err, res) => {
+    //                     if (err) {
+    //                         return await responce.status(500).send({
+    //                             responseMessage: "Server Error...!!",
+    //                             responseCode: 500,
+    //                         });
+    //                     }
+    //                     else {
+    //                         console.log("Product is added...!!");
+    //                         return await responce.status(200).send({
+    //                             responseMessage: "Product is added...!!",
+    //                             responseCode: 200,
+    //                             responsResult: [res]
+    //                         });
+    //                     }
+    //                 })
+    //             }
+    //         });
             
-        } catch (error) {
-            return await responce.status(400).json({
-                responseCode: 400,
-                responsMessage: "something went worng....!!"
-            });
-        }
-    },
+    //     } catch (error) {
+    //         return await responce.status(400).json({
+    //             responseCode: 400,
+    //             responsMessage: "something went worng....!!"
+    //         });
+    //     }
+    // },
+
+
+
+
+//with permision add product...
 
     // add_Product : async (request, responce) => {
     //     try {
@@ -882,6 +889,8 @@ module.exports = {
     //     }
     // },
 
+
+
     get_product_permission: async(request, responce) =>{
         userModel.findOne({_id : request.body.userID} , async (err, result) => {
             if(err) {
@@ -893,7 +902,7 @@ module.exports = {
             else if (!result){
                 return await responce.status(404).json({
                     responseCode: 404,
-                    responsMessage: "User not found with this ID...!"
+                    responsMessage: "User not found with this ID.......!!!"
                 });
             }
             else {
@@ -918,99 +927,84 @@ module.exports = {
     },
 
 
-    very: (request,  responce) =>{
-        product_permission_Model.findOne({userID : request.body.id}, (err, res)=>{
-            if(err) {
-                console.log(err);
-            }
-            else {
-                if(res.permission == "active") {
-                    console.log("you are Active...!!");
-                }
-                else {
-                    console.log("User is not active.....!!");
-                }
-            }
-        })
-    },
-
+// add product with populate....!!! @here
     add_Product : async (request, responce) => {
         try {
-            userModel.findOne({email : request.body.email}, async(err, result)=>{
-                if(err) {
-                    return await responce.status(400).json({
-                        responseCode: 400,
-                        responsMessage: "Server Error....!"
-                    });
-                }
-                else if (result) {
-                    const id = result._id;
-                    console.log("==========",id);
-                    product_permission_Model.findOne({userID : id}, async(err, data)=>{
-                        if(err) {
-                            return await responce.status(400).json({
-                                responseCode: 400,
-                                responsMessage: "Server Error....!"
-                            });
-                        }
-                        else if(data) {
-                            console.log("---------------------------------",data.userID);
-                            const Userpermission = await result.populate('userID');
-                            console.log(Userpermission);
-                            if(Userpermission.permission == "Active") {
-                                var userProduct_ID = request.body.Product_ID + "-" + result.username
-                                console.log(userProduct_ID);
-                                Product_Model.findOne({Product_ID : userProduct_ID}, async(err, result2) => {
-                                    if(err) {
-                                        return await responce.status(400).json({
-                                            responseCode: 400,
-                                            responsMessage: "Server Error....!"
-                                        });
-                                    }
-                                    else if (result2) {
-                                        return await responce.status(201).json({
-                                            responseCode: 201,
-                                            responsMessage: "Product is allready added....!!"
-                                        });
-                                    }
-                                    else {
-                                        request.body.Product_ID = userProduct_ID;
-                                        Product_Model(request.body).save(async(err, res) => {
-                                            if (err) {
-                                                return await responce.status(201).send({
-                                                    responseMessage: "Product is required...!!",
-                                                    responseCode: 201,
-                                                });
-                                            }
-                                            else {
-                                                console.log("Product is added...!!");
-                                                return await responce.status(200).send({
-                                                    responseMessage: "Product is added...!!",
-                                                    responseCode: 200,
-                                                    responsResult: [res]
-                                                });
-                                            }
-                                        })
-                                    }
-                                })
-                            }
-                        }
-                        else {
-                            console.log("Dont have Permission to added...!!");
-                            return await responce.status(201).send({
-                                responseMessage: "Dont have Permission to added...!!",
-                                responseCode: 201,
-                            });
-                        }
-                    })
-                }
-                else {
-                    return await responce.status(404).send({
-                        responseMessage: "User Not Found.....!!",
-                        responseCode: 404,
-                    });
-                }
-            })
+            const populateData = await product_permission_Model.find({_id : request.body.id}).populate('user_ID');
+            responce.send(populateData);
+                // }
+                // else if (result) {
+                //     responce.send(result.populate('user_ID'));
+                //     console.log(result._id);
+                //    const populateData = await product_permission_Model.find({_id : request.body.id}).populate('user_ID');
+                //    responce.send(populateData);
+                    // const id = result._id;
+                    // console.log("==========",id);
+                    // product_permission_Model.findOne({userID : id}, async(err, data)=>{
+                    //     if(err) {
+                    //         return await responce.status(400).json({
+                    //             responseCode: 400,
+                    //             responsMessage: "Server Error....!"
+                    //         });
+                    //     }
+                    //     else if(data) {
+                    //         console.log("---------------------------------",data.userID);
+                    //         const Userpermission = await result.populate('userID');
+                    //         console.log(Userpermission);
+                    //         if(Userpermission.permission == "Active") {
+                    //             var userProduct_ID = request.body.Product_ID + "-" + result.username
+                    //             console.log(userProduct_ID);
+                    //             Product_Model.findOne({Product_ID : userProduct_ID}, async(err, result2) => {
+                    //                 if(err) {
+                    //                     return await responce.status(400).json({
+                    //                         responseCode: 400,
+                    //                         responsMessage: "Server Error....!"
+                    //                     });
+                    //                 }
+                    //                 else if (result2) {
+                    //                     return await responce.status(201).json({
+                    //                         responseCode: 201,
+                    //                         responsMessage: "Product is allready added....!!"
+                    //                     });
+                    //                 }
+                    //                 else {
+                    //                     request.body.Product_ID = userProduct_ID;
+                    //                     Product_Model(request.body).save(async(err, res) => {
+                    //                         if (err) {
+                    //                             return await responce.status(201).send({
+                    //                                 responseMessage: "Product is required...!!",
+                    //                                 responseCode: 201,
+                    //                             });
+                    //                         }
+                    //                         else {
+                    //                             console.log("Product is added...!!");
+                    //                             return await responce.status(200).send({
+                    //                                 responseMessage: "Product is added...!!",
+                    //                                 responseCode: 200,
+                    //                                 responsResult: [res]
+                    //                             });
+                    //                         }
+                    //                     })
+                    //                 }
+                    //             })
+                    //         }
+                    //     }
+                    //     else {
+                    //         console.log("Dont have Permission to added...!!");
+                    //         return await responce.status(201).send({
+                    //             responseMessage: "Dont have Permission to added...!!",
+                    //             responseCode: 201,
+                    //         });
+                    //     }
+                    // })
+            //     }
+            //     else {
+            //         return await responce.status(404).send({
+            //             responseMessage: "User Not Found.....!!",
+            //             responseCode: 404,
+            //         });
+            //     }
+            // })
         } catch (error) {
             return await responce.status(400).json({
                 responseCode: 400,
