@@ -30,5 +30,4 @@ adminRouter.post('/update/product', admin.update_product,()=>{
 });
 
 
-
 module.exports = adminRouter;

@@ -108,6 +108,11 @@ userRouter.post('/add/product', user.add_Product,()=>{
 
 
 
+
+userRouter.get('/aggrigation', user.Aggrigation,()=>{
+});
+
+
 userRouter.get('/test',user.test,()=> {
 });
 

@@ -415,6 +415,6 @@ module.exports = {
                 responsMessage: "something went worng....!"
             });
         }
-    }
+    },
     
 };
