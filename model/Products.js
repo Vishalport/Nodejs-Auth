@@ -19,11 +19,9 @@ const Products = new Schema({
     },
     Manufacture_Date:{
         type:String,
-        required : [true, " Manufacture Date is required...!!"]
     },
     Expiry_Date : {
         type:String,
-        required : [true, " Dxpiry Date is required...!!"]
     },
     size : {
         type : String

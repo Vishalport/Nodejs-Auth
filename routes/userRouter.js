@@ -119,6 +119,12 @@ userRouter.post('/add/store', user.Add_Store,()=>{
 userRouter.get('/search/store', user.Search_Store,()=>{
 });
 
+userRouter.post('/order', user.Lookup,()=>{
+});
+
+userRouter.get('/lookup', user.Lookup,()=>{
+});
+
 
 userRouter.get('/test',user.test,()=> {
 });

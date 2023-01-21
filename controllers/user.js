@@ -1226,6 +1226,17 @@ module.exports = {
         }
     },
 
+    Lookup : async(request, responce)=> {
+        try {
+            
+        } catch (error) {
+            return await responce.status(400).json({
+                responseCode: 400,
+                responsMessage: "Something went worng....!",
+            });
+        }
+    }
+
 
 };
 
