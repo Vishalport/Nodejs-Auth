@@ -21,12 +21,17 @@ app.use(express.json());
 app.use("/api/v1/user", userRouter, (req, res) => {
 });
 
-app.use("/user", userRouter, (req, res) => {
+app.use("/user/", userRouter, (req, res) => {
 }); 
 
 app.use("/admin", adminRouter, (req, res) => {
 }); 
 
+// localhost:300/admin/static/contain/hdh/hjhd/editStaticContain..
+// localhost:3000/user/userlogin
+
+
+// localhost:3000/user/contain/hdh/hjhd/editStaticContain
 
 
  

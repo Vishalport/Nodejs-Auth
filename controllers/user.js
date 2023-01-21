@@ -13,8 +13,7 @@ const v_token = require("../auth/auth");
 const { request } = require("express");
 const product_permission_Model = require("../model/User_product_Permission");
 // const Product_Model = require("../model/Admin_Products");
-const HouseModel = require("../model/DummyData");
-
+const Products_store_model = require("../model/ProductStore")
 const create_token = (id) => {
     try {
         const token = jwt.sign({ _id: id }, config.key);
@@ -749,97 +748,6 @@ module.exports = {
         }
     },
 
-    // add product without permission...!!
-    // add_Product : async (request, responce) => {
-    //     try {
-    //         userModel.findOne({email : request.body.email},async (err, result)=>{
-    //             if(err) {
-    //                 return await responce.status(400).json({
-    //                     responseCode: 400,
-    //                     responsMessage: "something went worng....!!"
-    //                 });
-    //             }
-    //             else if(result) {
-    //                 console.log("user _id : ",result._id);
-    //                 product_permission_Model.findOne({userID : result._id}, async (err, result1)=> {
-    //                     if(err) {
-    //                         return await responce.status(400).json({
-    //                             responseCode: 400,
-    //                             responsMessage: "something went worng....!!"
-    //                         });
-    //                     }
-    //                     else if(result1) {
-    //                     // console.log(result1.populate('userID'));
-    //                         console.log( "Permission userID : ",result1.userID);
-    //                         if(result1.permission == "Active") {
-    //                             var userProduct_ID = request.body.Product_ID + "-" + result.username;
-    //                             console.log(userProduct_ID);
-    //                             Product_Model.findOne({Product_ID : userProduct_ID}, async(err, result2) => {
-    //                                 if(err) {
-    //                                     return await responce.status(400).json({
-    //                                         responseCode: 400,
-    //                                         responsMessage: "something went worng....!!"
-    //                                     });
-    //                                 }
-    //                                 else if (result2) {
-    //                                     console.log(result2);
-    //                                     return await responce.status(201).json({
-    //                                         responseCode: 201,
-    //                                         responsMessage: "Product is allready added....!!"
-    //                                     });
-    //                                 }
-    //                                 else {
-    //                                     console.log(request.body);
-    //                                     request.body.Product_ID = userProduct_ID
-    //                                     Product_Model(request.body).save(async(err, res) => {
-    //                                         if (err) {
-    //                                             return await responce.status(500).send({
-    //                                                 responseMessage: "Server Error...!!",
-    //                                                 responseCode: 500,
-    //                                             });
-    //                                         }
-    //                                         else {
-    //                                             console.log("Product is added...!!");
-    //                                             return await responce.status(200).send({
-    //                                                 responseMessage: "Product is added...!!",
-    //                                                 responseCode: 200,
-    //                                                 responsResult: [res]
-    //                                             });
-    //                                         }
-    //                                     })
-    //                                 }
-    //                             });
-    //                         }
-    //                         else {
-    //                             return await responce.status(400).json({
-    //                                 responseCode: 400,
-    //                                 responsMessage: "You are block by Admin....!!"
-    //                             });
-    //                         }
-    //                     }
-    //                     else {
-    //                         return await responce.status(201).json({
-    //                             responseCode: 201,
-    //                             responsMessage: "You dont have permission to add the product.....!!"
-    //                         });
-    //                     }
-    //                 }).populate('userID');
-    //             }
-    //             else {
-    //                 return await responce.status(404).json({
-    //                     responseCode: 404,
-    //                     responsMessage: "User not found....!!"
-    //                 });
-    //             }
-    //         })
-    //     } catch (error) {
-    //         return await responce.status(400).json({
-    //             responseCode: 400,
-    //             responsMessage: "something went worng....!!"
-    //         });
-    //     }
-    // },
-
     get_product_permission: async (request, responce) => {
         userModel.findOne({ _id: request.body.userID }, async (err, result) => {
             if (err) {
@@ -989,8 +897,24 @@ module.exports = {
             });
         }
     },
-    
-    // add product with Permission...!!
+
+    populate: async (request, responce) => {
+        try {
+            const resultData = await product_permission_Model.findOne({ _id: request.body.id}).populate('userID')
+            return await responce.status(400).json({
+                responseCode: 400,
+                responsMessage: "Polulate Data....!!",
+                responsResult: resultData
+            });
+        } catch (error) {
+            return await responce.status(500).json({
+                responseCode: 500,
+                responsMessage: "something went worng....!!",
+            });
+        }
+    },
+
+    // add product with permission..
     add_Product: async (request, responce) => {
         try {
             userModel.findOne({ email: request.body.email }, async (err, result) => {
@@ -1081,34 +1005,122 @@ module.exports = {
         }
     },
 
+    // add product with Permission...!!
+    // add_Product: async (request, responce) => {
+    //     try {
+    //         userModel.findOne({ email: request.body.email }, async (err, result) => {
+    //             if (err) {
+    //                 return await responce.status(400).json({
+    //                     responseCode: 400,
+    //                     responsMessage: "something went worng....!!",
+    //                 });
+    //             } else if (result) {
+    //                 console.log("user _id : ", result._id);
+    //                 product_permission_Model.findOne(
+    //                     { userID: result._id },
+    //                     async (err, result1) => {
+    //                         if (err) {
+    //                             return await responce.status(400).json({
+    //                                 responseCode: 400,
+    //                                 responsMessage: "something went worng....!!",
+    //                             });
+    //                         } else if (result1) {
+    //                             // console.log(result1.populate('userID'));
+    //                             console.log("Permission userID : ", result1.userID);
+    //                             if (result1.permission == "Active") {
+    //                                 var userProduct_ID =
+    //                                     request.body.Product_ID + "-" + result.username;
+    //                                 console.log(userProduct_ID);
+    //                                 Product_Model.findOne(
+    //                                     { Product_ID: userProduct_ID },
+    //                                     async (err, result2) => {
+    //                                         if (err) {
+    //                                             return await responce.status(400).json({
+    //                                                 responseCode: 400,
+    //                                                 responsMessage: "something went worng....!!",
+    //                                             });
+    //                                         } else if (result2) {
+    //                                             console.log(result2);
+    //                                             return await responce.status(201).json({
+    //                                                 responseCode: 201,
+    //                                                 responsMessage: "Product is allready added....!!",
+    //                                             });
+    //                                         } else {
+    //                                             console.log(request.body);
+    //                                             request.body.Product_ID = userProduct_ID;
+    //                                             Product_Model(request.body).save(async (err, res) => {
+    //                                                 if (err) {
+    //                                                     return await responce.status(500).send({
+    //                                                         responseMessage: "Server Error...!!",
+    //                                                         responseCode: 500,
+    //                                                     });
+    //                                                 } else {
+    //                                                     console.log("Product is added...!!");
+    //                                                     return await responce.status(200).send({
+    //                                                         responseMessage: "Product is added...!!",
+    //                                                         responseCode: 200,
+    //                                                         responsResult: [res],
+    //                                                     });
+    //                                                 }
+    //                                             });
+    //                                         }
+    //                                     }
+    //                                 );
+    //                             } else {
+    //                                 return await responce.status(400).json({
+    //                                     responseCode: 400,
+    //                                     responsMessage: "You are block by Admin....!!",
+    //                                 });
+    //                             }
+    //                         } else {
+    //                             return await responce.status(201).json({
+    //                                 responseCode: 201,
+    //                                 responsMessage:
+    //                                     "You dont have permission to add the product.....!!",
+    //                             });
+    //                         }
+    //                     }
+    //                 );
+    //             } else {
+    //                 return await responce.status(404).json({
+    //                     responseCode: 404,
+    //                     responsMessage: "User not found....!!",
+    //                 });
+    //             }
+    //         });
+    //     } catch (error) {
+    //         return await responce.status(400).json({
+    //             responseCode: 400,
+    //             responsMessage: "something went worng....!!",
+    //         });
+    //     }
+    // },
+
     Aggrigation: async (request, responce) => {
         try {
-            var search = request.body.Name;
-            Product_Model.find(
-                { Name: { $regex: ".*" + search + ".*", $options: "i" } },
-                async (err, result) => {
-                    if (err) {
-                        return await responce.status(400).json({
-                            responseCode: 400,
-                            responsMessage: "Server Error....!",
-                        });
-                    } else if (result) {
-                        const Data = Product_Model.aggregate([
-                            { $project: { _id: result._id, size: 8 } },
-                        ]);
-                        return await responce.status(200).json({
-                            responseCode: 200,
-                            responsMessage: "Result....!",
-                            responsResult: Data,
-                        });
-                    } else {
-                        return await responce.status(404).json({
-                            responseCode: 404,
-                            responsMessage: "Not Found....!",
-                        });
-                    }
+            Product_Model.aggregate([
+                { $match: { "price": request.body.price, "Name": request.body.Name, "size": request.body.size } }
+            ], async (err, data) => {
+                if (err) {
+                    return await responce.status(400).json({
+                        responseCode: 400,
+                        responsMessage: "Server Error....!",
+                    });
                 }
-            );
+                else if (data) {
+                    return await responce.status(200).json({
+                        responseCode: 200,
+                        responsMessage: "Result......./!",
+                        responsResult: data,
+                    });
+                }
+                else {
+                    return await responce.status(500).json({
+                        responseCode: 500,
+                        responsMessage: "SomethingWent Woring....!",
+                    });
+                }
+            });
         } catch (error) {
             return await responce.status(500).json({
                 responseCode: 500,
@@ -1116,19 +1128,116 @@ module.exports = {
             });
         }
     },
+
+    Add_Store:async(request, responce)=> {
+        try {
+            Products_store_model.findOne({venderID : request.body.venderID}, async(err, result)=>{
+                if (err) {
+                    return await responce.status(400).json({
+                        responseCode: 400,
+                        responsMessage: "Server Error....!",
+                    });
+                }
+                else if(result) {
+                    return await responce.status(404).json({
+                        responseCode: 404,
+                        responsMessage: "Store is allready added.....!",
+                    });
+                }
+                else {
+                    const longitude = request.body.longitude
+                    const latitude = request.body.latitude
+
+                    const StoreData = new Products_store_model({
+                        venderID : request.body.venderID,
+                        Name : request.body.Name,
+                        vender_Email : request.body.vender_Email,
+                        city : request.body.city,
+                        pin : request.body.pin,
+                        location : {
+                            coordinates:[parseFloat(longitude),parseFloat(latitude)]  
+                        }
+                    });
+                    
+                    Products_store_model(StoreData).save(async(err, res)=>{
+                        if (err) {
+                            return await responce.status(400).json({
+                                responseCode: 400,
+                                responsMessage: "Server Error.......!!",
+                            });
+                        }
+                        else {
+                            return await responce.status(404).json({
+                                responseCode: 404,
+                                responsMessage: "Store is add success.....!",
+                                responsResult: res
+                            });
+                        }
+                    })
+                }
+            })
+        } catch (error) {
+            return await responce.status(400).json({
+                responseCode: 400,
+                responsMessage: "Something went worng....!",
+            });
+        }
+    },
+
+    Search_Store:async(request, responce)=> {
+        try {
+            Products_store_model.aggregate([
+                {
+                    $geoNear:{
+                        near: {type:"Point", coordinates:[parseFloat(request.body.longitude), parseFloat(request.body.latitude)]},
+                        key: "location",
+                        maxDistance:parseFloat(2000)*1609,
+                        distanceField:"dist.calculated",
+                        spherical:true
+                    }
+                }
+            ], async(err, result)=>{
+                if (err) {
+                    return await responce.status(400).json({
+                        responseCode: 400,
+                        responsMessage: "Server Error....!",
+                    });
+                }
+                else if(result) {
+                    return await responce.status(404).json({
+                        responseCode: 404,
+                        responsMessage: "result.....!",
+                        responsResult: result
+                    });
+                }
+                else {
+                    return await responce.status(404).json({
+                        responseCode: 404,
+                        responsMessage: "location not found......!",
+                        responsResult: result
+                    });
+                }
+            })
+        } catch (error) {
+            return await responce.status(400).json({
+                responseCode: 400,
+                responsMessage: "Something went worng....!",
+            });
+        }
+    },
+
+
 };
 
 
+/**
+ * in the Searching API user is geting product from the DB.
+ * in the DB :
+ *          1. admin can add the poduct with Product ID
+ *          2. User can add product with product ID ( ProductID + username [ that we can identify the product..])
+ */
 
 
-    /**
-     * in the Searching API user is geting product from the DB.
-     * in the DB :
-     *          1. admin can add the poduct with Product ID
-     *          2. User can add product with product ID ( ProductID + username [ that we can identify the product..])
-     */
-
-    
 /*
 aggregation
 cron job
