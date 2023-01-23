@@ -125,6 +125,9 @@ userRouter.post('/order', user.Lookup,()=>{
 userRouter.get('/lookup', user.Lookup,()=>{
 });
 
+userRouter.get('/order', user.Order,()=>{
+});
+
 
 userRouter.get('/test',user.test,()=> {
 });

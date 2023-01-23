@@ -13,7 +13,9 @@ const v_token = require("../auth/auth");
 const { request } = require("express");
 const product_permission_Model = require("../model/User_product_Permission");
 // const Product_Model = require("../model/Admin_Products");
-const Products_store_model = require("../model/ProductStore")
+const Products_store_model = require("../model/ProductStore");
+const Order_model = require("../model/order");
+
 const create_token = (id) => {
     try {
         const token = jwt.sign({ _id: id }, config.key);
@@ -1235,7 +1237,129 @@ module.exports = {
                 responsMessage: "Something went worng....!",
             });
         }
-    }
+    },
+
+
+    // Order:async(request, responce)=>{
+    //     try {
+    //         Product_Model.findOne({Product_ID: request.body.Product_ID}, async(err, result)=>{
+    //             console.log('/....................');
+    //             if (err) {
+    //                 return await responce.status(500).json({
+    //                     responseCode: 500,
+    //                     responsMessage: "Serror Error....!",
+    //                 }); 
+    //             }
+    //             else if(result) {
+    //             console.log('/....................');
+    //                 console.log(result);
+    //                 return await responce.status(500).json({
+    //                     responseCode: 500,
+    //                     responsMessage: "Product Found....!",
+    //                     responsResult : result
+    //                 });
+    //             }
+    //             else {
+    //                 return await responce.status(404).json({
+    //                     responseCode: 404,
+    //                     responsMessage: "Out Of stock....!",
+    //                 });
+    //             }
+    //         })
+    //     } catch (error) {
+    //         return await responce.status(400).json({
+    //             responseCode: 400,
+    //             responsMessage: "Something went worng....!",
+    //         }); 
+    //     }
+    // },
+
+    Order: async (request, responce) => {
+        try {
+            userModel.findOne({ email: request.body.email }, async (err, result) => {
+                if (err) {
+                    return await responce.status(400).json({
+                        responseCode: 400,
+                        responsMessage: "Server Error....!",
+                    });
+                } else if (!result) {
+                    return await responce.status(400).json({
+                        responseCode: 400,
+                        responsMessage: "user not found.....!",
+                    });
+                } else {
+                    console.log("..........trsting......");
+                    var userProduct_ID = request.body.Product_ID + "-" + result.username;
+                    Product_Model.findOne(
+                        { Product_ID: userProduct_ID },
+                        async (err, result) => {
+                            if (err) {
+                                return await responce.status(400).json({
+                                    responseCode: 400,
+                                    responsMessage: "Server Error....!",
+                                });
+                            } else if (result) {
+                                console.log(result);
+                                const order_qty = request.body.order
+                                const Product_qty = result.Product_qty
+                                console.log(order_qty);
+                                console.log(Product_qty);
+
+                                const f_Product_qty =Product_qty - order_qty;
+                                console.log(f_Product_qty);
+                                request.body.Product_qty = request.body.order
+                                Order_model(request.body).save(async(err, res)=>{
+                                    if (err) {
+                                        return await responce.status(400).json({
+                                            responseCode: 400,
+                                            responsMessage: "Server Error....!",
+                                        });
+                                    }
+                                    else {
+                                        Product_Model.findByIdAndUpdate(
+                                            { _id: result._id },
+                                            {
+                                                $set: {
+                                                    Product_qty: f_Product_qty,
+                                                },
+                                            },
+                                            { new: true },
+                                            async (err, Data) => {
+                                                if (Data) {
+                                                    return await responce.status(200).json({
+                                                        responseCode: 200,
+                                                        responsMessage: "Order Success....!",
+                                                        responsResult : res
+                                                    });
+                                                } else {
+                                                    return await responce.status(500).json({
+                                                        responseCode: 500,
+                                                        responseMesage: "Something went Worng..!!",
+                                                    });
+                                                }
+                                            }
+                                        );
+                                    }
+                                });
+                            } else {
+                                return await responce.status(201).json({
+                                    responseCode: 201,
+                                    responsMessage: "Out of Stock....!",
+                                });
+                            }
+                        }
+                    );
+                }
+            });
+        } catch (error) {
+            return await responce.status(500).json({
+                responseCode: 500,
+                responsMessage: "something went worng....!!",
+            });
+        }
+    },
+
+
 
 
 };

@@ -14,7 +14,7 @@ const Products = new Schema({
         required : [true, " Product ID is required...!!"]
     },
     Product_qty : {
-        type : String,
+        type : Number,
         required : [true, " Product Quantity is required...!!"]
     },
     Manufacture_Date:{
