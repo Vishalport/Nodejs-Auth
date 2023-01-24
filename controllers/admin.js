@@ -3,7 +3,7 @@ var adminModel = require('../model/admin');
 const userModel = require("../model/user");
 const jwt = require("jsonwebtoken");
 const config = require("../config/config");
-const Product_Model = require("../model/Products");
+const Product_Model = require("../model/Admin_Products");
 const StaticModal = require("../model/StaticContaint")
 
  const create_token = (id) => {
@@ -363,58 +363,6 @@ module.exports = {
                 responsMessage: "something went worng....!!"
             });
         }
-    },
-
-    update_product : async(request, responce) => {
-        try {
-            Product_Model.findOne({Product_ID : request.body.Product_ID}, async(err, result1) =>{
-                if(err) {
-                    return await responce.status(400).json({
-                        responseCode: 400,
-                        responsMessage: "server error....!"
-                    });
-                }
-                else if(!result1) {
-                    return await responce.status(400).json({
-                        responseCode: 400,
-                        responsMessage: "Product not found.....!"
-                    });
-                }
-                else {
-                    console.log("...line working");
-                    Product_Model.findByIdAndUpdate(
-                        { _id: result1._id },
-                        {
-                            $set: {
-                                Product_qty: request.body.Product_qty,
-                                Manufacture_Date: request.body.Manufacture_Date,
-                                Expiry_Date: request.body.Expiry_Date
-                            }
-                        },
-                        { new: true },
-                        async (err, Data) => {
-                            if (Data) {
-                                return await responce.status(200).json({
-                                    responseCode: 200,
-                                    responsMessage: "Product Updated...!!) ",
-                                    responseResult: Data,
-                                });
-                            } else {
-                                return await responce.status(500).json({
-                                    responseCode: 500,
-                                    responseMesage: "Something went Worng..!!",
-                                });
-                            }
-                        }
-                    );  
-                }
-            })
-        } catch (error) {
-            return await responce.status(500).json({
-                responseCode: 500,
-                responsMessage: "something went worng....!"
-            });
-        }
-    },
+    }
     
 };

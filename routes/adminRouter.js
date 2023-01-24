@@ -26,8 +26,6 @@ adminRouter.post('/delete/product',admin.remove_Product,()=> {
 adminRouter.get('/get/product',admin.get_Product,()=> {
 });
 
-adminRouter.post('/update/product', admin.update_product,()=>{
-});
 
 
 module.exports = adminRouter;

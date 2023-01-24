@@ -35,14 +35,4 @@ StaticContaint.findOne({title : "privacy and policy"},(err, result)=> {
 //     ...   $group : { _id : "$ISODate", totalQuantity : { $sum : "$quantity" } }
 //     ... }
 //     ... ] )
-  
-
-/*
-
-
-
-
-
-*/
-
-
+    
